@@ -44,7 +44,7 @@ export default function TelaEducacaoFisica({ navigation }: Props) {
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Registrar Treino</Text>
-          <TextInput 
+          <TextInput placeholderTextColor="#999" 
             style={styles.input} 
             placeholder="Ex: Caminhada 30 min" 
             value={desc} 

@@ -11,6 +11,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -150,7 +152,7 @@ export default function TelaLembretes({ navigation }: Props) {
             <Text style={styles.modalTitle}>Novo Lembrete</Text>
             
             <Text style={styles.label}>Título</Text>
-            <TextInput 
+            <TextInput placeholderTextColor="#999" 
               style={styles.input} 
               placeholder="Ex: Tomar Losartana" 
               value={title} 
@@ -158,7 +160,7 @@ export default function TelaLembretes({ navigation }: Props) {
             />
 
             <Text style={styles.label}>Horário (HH:MM)</Text>
-            <TextInput 
+            <TextInput placeholderTextColor="#999" 
               style={styles.input} 
               placeholder="Ex: 08:30" 
               value={time} 

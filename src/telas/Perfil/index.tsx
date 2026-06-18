@@ -63,7 +63,7 @@ export default function ProfileScreen({ navigation }: Props) {
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Idade</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#999"
             style={styles.input}
             placeholder="Sua idade"
             value={age}
@@ -75,7 +75,7 @@ export default function ProfileScreen({ navigation }: Props) {
         <View style={styles.row}>
           <View style={[styles.formGroup, { flex: 1, marginRight: 10 }]}>
             <Text style={styles.label}>Peso (kg)</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#999"
               style={styles.input}
               placeholder="Ex: 70.5"
               value={weight}
@@ -85,7 +85,7 @@ export default function ProfileScreen({ navigation }: Props) {
           </View>
           <View style={[styles.formGroup, { flex: 1, marginLeft: 10 }]}>
             <Text style={styles.label}>Altura (cm)</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#999"
               style={styles.input}
               placeholder="Ex: 175"
               value={height}

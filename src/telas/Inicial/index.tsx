@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, Dimensions, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView, Dimensions, ScrollView, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../App';
 import { FontAwesome5, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { useEstadoGlobal } from '../../armazenamento/estadoGlobal';
 import { styles } from './styles';
 
 type TelaInicialNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Inicial'>;
@@ -14,14 +15,21 @@ interface Props {
 const { width } = Dimensions.get('window');
 
 export default function TelaInicial({ navigation }: Props) {
+  const { perfil } = useEstadoGlobal();
+  const userName = perfil?.nome || 'Paciente';
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <View style={styles.headerTop}>
-            <Text style={styles.title}>Olá, Paciente!</Text>
-            <TouchableOpacity style={styles.settingsButton}>
-              <Ionicons name="settings-sharp" size={28} color="#999" />
+            <Text style={styles.title}>Olá, {userName}!</Text>
+            <TouchableOpacity style={styles.settingsButton} onPress={() => navigation.navigate('Configuracoes')}>
+              {perfil?.fotoUri ? (
+                <Image source={{ uri: perfil.fotoUri }} style={{ width: 44, height: 44, borderRadius: 22 }} />
+              ) : (
+                <Ionicons name="settings-sharp" size={28} color="#999" />
+              )}
             </TouchableOpacity>
           </View>
           <Text style={styles.subtitle}>Como você está se sentindo hoje?</Text>
@@ -43,7 +51,7 @@ export default function TelaInicial({ navigation }: Props) {
             activeOpacity={0.8}
           >
             <FontAwesome5 name="heartbeat" size={48} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Sinais Vitais (BPM/ Glicose)</Text>
+            <Text style={styles.cardText}>Sinais Vitais (BPM/ Glicose/ Pressão)</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 

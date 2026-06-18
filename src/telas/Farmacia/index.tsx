@@ -101,19 +101,19 @@ export default function TelaFarmacia({ navigation }: Props) {
           
           <View style={styles.formGroup}>
             <Text style={styles.label}>Nome (Ex: Losartana)</Text>
-            <TextInput style={styles.input} value={nome} onChangeText={setNome} />
+            <TextInput placeholderTextColor="#999" style={styles.input} value={nome} onChangeText={setNome} />
           </View>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Dosagem (Ex: 50mg)</Text>
-            <TextInput style={styles.input} value={dosagem} onChangeText={setDosagem} />
+            <TextInput placeholderTextColor="#999" style={styles.input} value={dosagem} onChangeText={setDosagem} />
           </View>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Forma (Ex: Comprimido, Xarope)</Text>
-            <TextInput style={styles.input} value={forma} onChangeText={setForma} />
+            <TextInput placeholderTextColor="#999" style={styles.input} value={forma} onChangeText={setForma} />
           </View>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Quantidade em Estoque</Text>
-            <TextInput style={styles.input} value={estoque} onChangeText={setEstoque} keyboardType="numeric" />
+            <TextInput placeholderTextColor="#999" style={styles.input} value={estoque} onChangeText={setEstoque} keyboardType="numeric" />
           </View>
 
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>

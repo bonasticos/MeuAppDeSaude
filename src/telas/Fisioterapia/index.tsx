@@ -37,7 +37,7 @@ export default function TelaFisioterapia({ navigation }: Props) {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Registro de Dor (EVA)</Text>
           <Text style={styles.infoText}>Mapeie a intensidade da dor hoje (0 a 10).</Text>
-          <TextInput 
+          <TextInput placeholderTextColor="#999" 
             style={styles.input} 
             placeholder="Nível de 0 a 10" 
             keyboardType="numeric"

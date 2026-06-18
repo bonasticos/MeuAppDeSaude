@@ -39,7 +39,7 @@ export default function LoginScreen({ navigation }: Props) {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>E-mail ou CPF</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#999"
               style={styles.input}
               placeholder="Digite seu e-mail ou CPF"
               value={emailOrCpf}
@@ -51,7 +51,7 @@ export default function LoginScreen({ navigation }: Props) {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Senha</Text>
-            <TextInput
+            <TextInput placeholderTextColor="#999"
               style={styles.input}
               placeholder="Digite sua senha"
               value={password}

@@ -51,17 +51,17 @@ export default function TelaEnfermagem({ navigation }: Props) {
           
           <View style={styles.formGroup}>
             <Text style={styles.label}>Temperatura (°C)</Text>
-            <TextInput style={styles.input} placeholder="Ex: 36.5" keyboardType="numeric" value={temperatura} onChangeText={setTemperatura} />
+            <TextInput placeholderTextColor="#999" style={styles.input} placeholder="Ex: 36.5" keyboardType="numeric" value={temperatura} onChangeText={setTemperatura} />
           </View>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Pressão Arterial (mmHg)</Text>
-            <TextInput style={styles.input} placeholder="Ex: 120/80" value={pressao} onChangeText={setPressao} />
+            <TextInput placeholderTextColor="#999" style={styles.input} placeholder="Ex: 120/80" value={pressao} onChangeText={setPressao} />
           </View>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Saturação de Oxigênio (SpO2 %)</Text>
-            <TextInput style={styles.input} placeholder="Ex: 98" keyboardType="numeric" value={spo2} onChangeText={setSpo2} />
+            <TextInput placeholderTextColor="#999" style={styles.input} placeholder="Ex: 98" keyboardType="numeric" value={spo2} onChangeText={setSpo2} />
           </View>
 
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>

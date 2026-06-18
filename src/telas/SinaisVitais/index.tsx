@@ -14,18 +14,20 @@ interface Props {
 export default function TelaSinaisVitais({ navigation }: Props) {
   const [bpm, setBpm] = useState('');
   const [glucose, setGlucose] = useState('');
+  const [pressao, setPressao] = useState('');
   const addSinalVital = useEstadoGlobal((state) => state.addSinalVital);
   const historico = useEstadoGlobal((state) => state.sinaisVitais);
 
   const handleSave = () => {
-    if (!bpm || !glucose) {
-      Alert.alert('Erro', 'Preencha os dois campos.');
+    if (!bpm || !glucose || !pressao) {
+      Alert.alert('Erro', 'Preencha todos os campos.');
       return;
     }
-    addSinalVital({ bpm, glicose: glucose });
+    addSinalVital({ bpm, glicose: glucose, pressao });
     Alert.alert('Salvo', 'Sinais vitais registrados com sucesso!');
     setBpm('');
     setGlucose('');
+    setPressao('');
   };
 
   return (
@@ -33,12 +35,12 @@ export default function TelaSinaisVitais({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <Text style={styles.title}>Sinais Vitais</Text>
-          <Text style={styles.subtitle}>Registre seus batimentos e níveis de glicose recentes.</Text>
+          <Text style={styles.subtitle}>Registre seus batimentos, pressão arterial e níveis de glicose recentes.</Text>
         </View>
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Batimentos por Minuto (BPM)</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#999"
             style={styles.input}
             placeholder="Ex: 75"
             keyboardType="numeric"
@@ -49,12 +51,23 @@ export default function TelaSinaisVitais({ navigation }: Props) {
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Glicose (mg/dL)</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#999"
             style={styles.input}
             placeholder="Ex: 90"
             keyboardType="numeric"
             value={glucose}
             onChangeText={setGlucose}
+          />
+        </View>
+
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Pressão Arterial (mmHg)</Text>
+          <TextInput placeholderTextColor="#999"
+            style={styles.input}
+            placeholder="Ex: 120/80"
+            keyboardType="default"
+            value={pressao}
+            onChangeText={setPressao}
           />
         </View>
 
@@ -69,8 +82,8 @@ export default function TelaSinaisVitais({ navigation }: Props) {
               <Text style={{color: '#666'}}>Nenhum registro ainda.</Text>
             ) : (
               historico.map((h, index) => (
-                <Text key={h.id} style={{color: '#333'}}>
-                  {new Date(h.data).toLocaleTimeString()}: BPM {h.bpm} - Glicose {h.glicose}
+                <Text key={h.id} style={{color: '#333', marginBottom: 4}}>
+                  {new Date(h.data).toLocaleTimeString()}: BPM {h.bpm} | Glicose {h.glicose} | Pressão {h.pressao || '--'}
                 </Text>
               ))
             )}

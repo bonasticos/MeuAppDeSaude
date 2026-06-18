@@ -35,7 +35,7 @@ export default function RegisterScreen({ navigation }: Props) {
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>E-mail ou CPF</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#999"
             style={styles.input}
             placeholder="Seu e-mail ou CPF"
             value={emailOrCpf}
@@ -46,7 +46,7 @@ export default function RegisterScreen({ navigation }: Props) {
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Telefone</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#999"
             style={styles.input}
             placeholder="(11) 99999-9999"
             value={phone}
@@ -57,7 +57,7 @@ export default function RegisterScreen({ navigation }: Props) {
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Senha</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#999"
             style={styles.input}
             placeholder="Crie uma senha"
             value={password}
@@ -68,7 +68,7 @@ export default function RegisterScreen({ navigation }: Props) {
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Confirmar Senha</Text>
-          <TextInput
+          <TextInput placeholderTextColor="#999"
             style={styles.input}
             placeholder="Repita a senha"
             value={confirmPassword}

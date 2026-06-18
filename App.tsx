@@ -14,7 +14,7 @@ import TelaEnfermagem from './src/telas/Enfermagem';
 import TelaEducacaoFisica from './src/telas/EducacaoFisica';
 import TelaPsicologia from './src/telas/Psicologia';
 import TelaFisioterapia from './src/telas/Fisioterapia';
-
+import TelaConfiguracoes from './src/telas/Configuracoes';
 export type RootStackParamList = {
   Login: undefined;
   Cadastro: undefined;
@@ -28,6 +28,7 @@ export type RootStackParamList = {
   EducacaoFisica: undefined;
   Psicologia: undefined;
   Fisioterapia: undefined;
+  Configuracoes: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -48,6 +49,7 @@ export default function App() {
         <Stack.Screen name="EducacaoFisica" component={TelaEducacaoFisica} />
         <Stack.Screen name="Psicologia" component={TelaPsicologia} />
         <Stack.Screen name="Fisioterapia" component={TelaFisioterapia} />
+        <Stack.Screen name="Configuracoes" component={TelaConfiguracoes} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -14,6 +14,7 @@ export interface SinalVital {
   id: string;
   bpm: string;
   glicose: string;
+  pressao?: string;
   data: string;
 }
 
@@ -51,6 +52,11 @@ export interface RegistroDor {
   nivel: number;
   data: string;
 }
+export interface PerfilUsuario {
+  nome: string;
+  fotoUri: string | null;
+  telefone: string;
+}
 
 interface EstadoGlobal {
   lembretes: Lembrete[];
@@ -74,11 +80,18 @@ interface EstadoGlobal {
 
   historicoDor: RegistroDor[];
   addRegistroDor: (dor: Omit<RegistroDor, 'id' | 'data'>) => void;
+
+  perfil: PerfilUsuario | null;
+  updatePerfil: (perfil: Partial<PerfilUsuario>) => void;
 }
 
 export const useEstadoGlobal = create<EstadoGlobal>()(
   persist(
     (set) => ({
+      perfil: null,
+      updatePerfil: (novosDados) => set((state) => ({
+        perfil: state.perfil ? { ...state.perfil, ...novosDados } : { nome: '', fotoUri: null, telefone: '', ...novosDados } as PerfilUsuario
+      })),
       lembretes: [],
       addLembrete: (lembrete) => set((state) => ({
         lembretes: [...state.lembretes, { ...lembrete, id: Math.random().toString() }]
