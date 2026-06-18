@@ -56,6 +56,104 @@ Os seguintes grandes módulos já estão funcionais, validados e conectados:
 *   **RNF01 a RNF14:** Banco de dados seguro e offline-first, criptografia em trânsito, acessibilidade para idosos (letras maiores, auto contraste), conformidade com LGPD/HIPAA, tempo de resposta na interface, modo offline funcional e baixo peso do pacote (abaixo de 50mb).
 
 </details>
+---
+
+#  Guia de Contribuição
+
+Este documento define as regras e boas práticas para manter o repositório organizado, com histórico limpo e fluxo de trabalho previsível para todos os colaboradores.
+
+
+##  Branches
+
+> **`main` é protegida — ninguém faz `push` direto nela.** Toda mudança entra via Pull Request.
+
+Crie uma branch por tarefa, seguindo o padrão de nomenclatura abaixo:
+
+| Prefixo | Uso | Exemplo |
+|---|---|---|
+| `feature/` | nova funcionalidade | `feature/login-google` |
+| `fix/` | correção de bug | `fix/erro-cadastro-usuario` |
+| `hotfix/` | correção urgente em produção | `hotfix/api-fora-do-ar` |
+| `chore/` | manutenção, configs, dependências | `chore/atualiza-dependencias` |
+| `docs/` | documentação | `docs/atualiza-readme` |
+
+**Regras gerais:**
+- Sempre crie a branch a partir da versão mais atualizada da `main`/`develop`.
+- Delete a branch após o merge (o GitHub pode fazer isso automaticamente).
+
+---
+
+##  Padrão de Commits (Conventional Commits)
+
+**Formato:**
+```
+tipo(escopo opcional): descrição curta no imperativo
+```
+
+| Tipo | Quando usar |
+|---|---|
+| `feat` | nova funcionalidade |
+| `fix` | correção de bug |
+| `docs` | mudanças apenas em documentação |
+| `style` | formatação, espaços, ponto e vírgula (sem mudar lógica) |
+| `refactor` | refatoração sem mudar comportamento |
+| `test` | adição ou ajuste de testes |
+| `chore` | tarefas de manutenção, dependências, configs |
+| `perf` | melhoria de performance |
+
+**Exemplos:**
+```
+feat(auth): adiciona login com Google
+fix(api): corrige erro 500 ao salvar usuário
+docs: atualiza instruções de instalação
+```
+
+**Boas práticas:**
+- Mensagens no presente/imperativo (`adiciona`, não `adicionado`).
+- Primeira linha com até ~72 caracteres.
+- Use o corpo do commit (linha em branco + texto) para explicar o *porquê*, quando necessário.
+- Evite commits genéricos como `update`, `ajustes`, `wip`.
+- Prefira commits pequenos e atômicos — uma mudança lógica por commit.
+
+---
+
+##  Pull Requests
+
+| Regra | Descrição |
+|---|---|
+| Origem | Toda mudança vai para `main`/`develop` via PR, nunca via push direto |
+| Título | Mesmo padrão dos commits (ex: `feat: adiciona tela de relatórios`) |
+| Descrição | O que foi feito, por quê, como testar, issue relacionada (`Closes #12`) |
+| Aprovação | Mínimo **1 aprovação** antes do merge |
+| Autoaprovação | Evite mergear o próprio PR sem revisão de outra pessoa |
+| Estratégia de merge | Prefira **Squash and Merge** (um commit por PR no histórico da `main`) |
+| Tamanho | PRs grandes devem ser quebrados em partes menores sempre que possível |
+
+---
+
+##  Issues
+
+| Boa prática | Descrição |
+|---|---|
+| Templates | Use templates de bug report / feature request sempre que disponíveis |
+| Issue antes do código | Toda tarefa relevante deve ter uma issue antes de virar branch/PR |
+| Labels | `bug`, `enhancement`, `documentation`, `good first issue`, `in progress`, etc. |
+| Vínculo com PR | Use `Closes #X` ou `Fixes #X` na descrição do PR |
+
+---
+
+##  Código e Qualidade
+
+- Mantenha um `.gitignore` adequado (`node_modules`, `.env`, arquivos de build, etc).
+- **Nunca** commitar credenciais ou chaves de API — use variáveis de ambiente e um `.env.example` como referência.
+- Rode o linter/formatter (ESLint, Prettier, Black, etc.) antes de commitar.
+
+---
+
+##  Documentação
+
+- Sempre que uma mudança alterar comportamento, atualize o README/documentação no mesmo PR.
+- Mantenha o README com: como instalar, como rodar e estrutura do projeto.
 
 ---
 
