@@ -1,5 +1,5 @@
-﻿import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { styles } from './styles';
@@ -34,6 +34,12 @@ export default function LoginScreen({ navigation }: Props) {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
+          <View style={{ alignItems: 'center', marginBottom: 24 }}>
+            <Image 
+              source={require('../../../assets/logo.png')} 
+              style={{ width: 140, height: 140, resizeMode: 'contain' }} 
+            />
+          </View>
           <Text style={styles.title}>Bem-vindo!</Text>
           <Text style={styles.subtitle}>Faça login para acessar seus dados de saúde.</Text>
 

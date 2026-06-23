@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useStore } from '../../store/useStore';
@@ -40,6 +40,12 @@ export default function RegisterScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={{ alignItems: 'center', marginBottom: 16 }}>
+          <Image 
+            source={require('../../../assets/logo.png')} 
+            style={{ width: 100, height: 100, resizeMode: 'contain' }} 
+          />
+        </View>
         <Text style={styles.title}>Criar Conta</Text>
         <Text style={styles.subtitle}>Preencha seus dados para começar.</Text>
 
