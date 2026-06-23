@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
@@ -55,6 +55,26 @@ export default function TelaConfiguracoes({ navigation }: Props) {
     );
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Sair',
+      'Tem certeza que deseja sair do aplicativo?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Sair', 
+          style: 'destructive',
+          onPress: () => {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -98,6 +118,10 @@ export default function TelaConfiguracoes({ navigation }: Props) {
 
         <TouchableOpacity style={styles.recoverButton} onPress={handleRecoverPassword}>
           <Text style={styles.recoverButtonText}>Recuperar Senha</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Sair do Aplicativo</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>

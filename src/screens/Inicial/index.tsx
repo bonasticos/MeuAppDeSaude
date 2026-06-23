@@ -22,6 +22,9 @@ export default function TelaInicial({ navigation }: Props) {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
+          <View style={{ alignItems: 'center', marginBottom: 16 }}>
+            <Image source={require('../../../assets/logo.png')} style={{ width: 80, height: 80, borderRadius: 16 }} />
+          </View>
           <View style={styles.headerTop}>
             <Text style={styles.title}>Olá, {userName}!</Text>
             <TouchableOpacity style={styles.settingsButton} onPress={() => navigation.navigate('Configuracoes')}>

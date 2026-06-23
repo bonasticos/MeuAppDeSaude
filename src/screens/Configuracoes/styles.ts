@@ -1,4 +1,4 @@
-﻿import { StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
@@ -42,5 +42,8 @@ export const styles = StyleSheet.create({
 
   backButton: { padding: 16, marginTop: 16, alignItems: 'center' },
   backButtonText: { color: '#666', fontSize: 16, fontWeight: 'bold' },
+
+  logoutButton: { backgroundColor: '#dc3545', padding: 16, borderRadius: 12, width: '100%', alignItems: 'center', marginTop: 16 },
+  logoutButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });
 
