@@ -1,4 +1,4 @@
-﻿import { StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -112,5 +112,29 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+  sectionTitle: { fontSize: 22, fontWeight: 'bold', color: '#17a2b8', marginTop: 20, marginBottom: 15 },
+  card: { backgroundColor: '#fff', padding: 20, borderRadius: 16, marginBottom: 20, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+  activityList: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  activityButton: { flex: 1, minWidth: '45%', backgroundColor: '#f8f9fa', padding: 14, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#ddd' },
+  selectedActivityButton: { backgroundColor: '#e0f7fa', borderColor: '#17a2b8' },
+  activityText: { fontSize: 14, color: '#666', textAlign: 'center' },
+  selectedActivityText: { color: '#17a2b8', fontWeight: 'bold' },
+  infoText: { fontSize: 16, color: '#666', marginBottom: 10 },
+  progressBar: { height: 12, backgroundColor: '#e9ecef', borderRadius: 6, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: '#17a2b8' },
+  actionButton: { backgroundColor: '#28a745', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 10 },
+  actionButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  historyContainer: { marginTop: 10, marginBottom: 20 },
+  historyTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginBottom: 10 },
+  actionButtonSecondary: { backgroundColor: '#ffc107', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 20 },
+  actionButtonTextSecondary: { color: '#333', fontSize: 16, fontWeight: 'bold' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '80%' },
+  modalTitle: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 20, textAlign: 'center' },
+  exerciseItem: { borderBottomWidth: 1, borderBottomColor: '#eee', paddingVertical: 16 },
+  exerciseName: { fontSize: 18, fontWeight: 'bold', color: '#17a2b8', marginBottom: 4 },
+  exerciseDesc: { fontSize: 16, color: '#666', lineHeight: 24 },
+  closeModalBtn: { backgroundColor: '#dc3545', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 20 },
+  closeModalText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });
 

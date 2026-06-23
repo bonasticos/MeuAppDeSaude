@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, Dimensions, ScrollView, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -41,8 +41,8 @@ export default function TelaInicial({ navigation }: Props) {
             onPress={() => navigation.navigate('Humor')}
             activeOpacity={0.8}
           >
-            <Text style={styles.emoji}>😊</Text>
-            <Text style={styles.cardText}>Humor & Atividade</Text>
+            <MaterialCommunityIcons name="brain" size={48} color="#fff" style={styles.icon} />
+            <Text style={styles.cardText}>Saúde Mental (Psicologia & Humor)</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -51,7 +51,7 @@ export default function TelaInicial({ navigation }: Props) {
             activeOpacity={0.8}
           >
             <FontAwesome5 name="heartbeat" size={48} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Sinais Vitais (BPM/ Glicose/ Pressão)</Text>
+            <Text style={styles.cardText}>Sinais Vitais (Enfermagem)</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -59,8 +59,8 @@ export default function TelaInicial({ navigation }: Props) {
             onPress={() => navigation.navigate('Lembretes')}
             activeOpacity={0.8}
           >
-            <MaterialCommunityIcons name="clock-outline" size={54} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Meus Lembretes</Text>
+            <MaterialCommunityIcons name="pill" size={54} color="#fff" style={styles.icon} />
+            <Text style={styles.cardText}>Lembretes & Farmácia</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -68,44 +68,8 @@ export default function TelaInicial({ navigation }: Props) {
             onPress={() => navigation.navigate('Perfil')}
             activeOpacity={0.8}
           >
-            <MaterialCommunityIcons name="scale-bathroom" size={54} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Ver Meu IMC</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#fd7e14' }]} 
-            onPress={() => navigation.navigate('Farmacia')}
-            activeOpacity={0.8}
-          >
-            <MaterialCommunityIcons name="pill" size={54} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Farmácia</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#6f42c1' }]} 
-            onPress={() => navigation.navigate('Enfermagem')}
-            activeOpacity={0.8}
-          >
-            <MaterialCommunityIcons name="stethoscope" size={54} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Enfermagem</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#28a745' }]} 
-            onPress={() => navigation.navigate('EducacaoFisica')}
-            activeOpacity={0.8}
-          >
             <MaterialCommunityIcons name="run" size={54} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Ed. Física</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#17a2b8' }]} 
-            onPress={() => navigation.navigate('Psicologia')}
-            activeOpacity={0.8}
-          >
-            <MaterialCommunityIcons name="brain" size={54} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Psicologia</Text>
+            <Text style={styles.cardText}>IMC & Educação Física</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 

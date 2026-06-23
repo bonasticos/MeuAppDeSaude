@@ -1,4 +1,4 @@
-﻿import { StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
@@ -31,6 +31,21 @@ export const styles = StyleSheet.create({
   saveModalBtn: { backgroundColor: '#28a745', padding: 18, borderRadius: 12, alignItems: 'center', marginTop: 10 },
   saveModalText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   cancelModalBtn: { padding: 18, alignItems: 'center', marginTop: 5 },
-  cancelModalText: { color: '#666', fontSize: 16, fontWeight: 'bold' }
+  cancelModalText: { color: '#666', fontSize: 16, fontWeight: 'bold' },
+
+  tabContainer: { flexDirection: 'row', marginHorizontal: 20, marginBottom: 15, backgroundColor: '#e9ecef', borderRadius: 12, padding: 4 },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 10 },
+  tabActive: { backgroundColor: '#fff', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+  tabText: { fontSize: 16, fontWeight: 'bold', color: '#6c757d' },
+  tabTextActive: { color: '#0056b3' },
+  
+  pdfButton: { backgroundColor: '#17a2b8', padding: 16, borderRadius: 12, alignItems: 'center', flex: 1, marginRight: 5, elevation: 2 },
+  addMedButton: { backgroundColor: '#28a745', padding: 16, borderRadius: 12, alignItems: 'center', flex: 2, marginLeft: 5, elevation: 2 },
+  rowButtons: { flexDirection: 'row', marginHorizontal: 20, marginBottom: 15 },
+  medCard: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', elevation: 2, marginHorizontal: 20 },
+  medTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  medSub: { fontSize: 14, color: '#666', marginTop: 4 },
+  medEstoqueBadge: { backgroundColor: '#e9ecef', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
+  medEstoqueText: { fontSize: 14, fontWeight: 'bold', color: '#495057' },
 });
 

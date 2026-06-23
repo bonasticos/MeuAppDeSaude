@@ -11,6 +11,9 @@ export interface SinalVital {
   bpm: string;
   glicose: string;
   pressao?: string;
+  oxigenacao?: string;
+  humor?: string;
+  exercicio?: boolean;
   data: string;
 }
 

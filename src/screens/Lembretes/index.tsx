@@ -1,10 +1,12 @@
-﻿import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, FlatList, Alert, Modal, TextInput } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, SafeAreaView, FlatList, Alert, Modal, TextInput, ScrollView } from 'react-native';
 import { useStore } from '../../store/useStore';
 import { Lembrete } from '../../types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import * as Notifications from 'expo-notifications';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import { styles } from './styles';
 
 Notifications.setNotificationHandler({
@@ -24,15 +26,28 @@ interface Props {
 }
 
 export default function TelaLembretes({ navigation }: Props) {
+  const [activeTab, setActiveTab] = useState<'lembretes' | 'farmacia'>('lembretes');
+
   const lembretesData = useStore((state) => state.lembretes);
   const addLembrete = useStore((state) => state.addLembrete);
   const removeLembrete = useStore((state) => state.removeLembrete);
 
+  const medicamentos = useStore((state) => state.medicamentos);
+  const addMedicamento = useStore((state) => state.addMedicamento);
+
+  // Lembrete State
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [time, setTime] = useState('');
   const [type, setType] = useState('Saúde');
   
+  // Farmacia State
+  const [medModalVisible, setMedModalVisible] = useState(false);
+  const [nomeMed, setNomeMed] = useState('');
+  const [dosagemMed, setDosagemMed] = useState('');
+  const [formaMed, setFormaMed] = useState('');
+  const [estoqueMed, setEstoqueMed] = useState('');
+
   const categories = [
     { name: 'Saúde', color: '#17a2b8' },
     { name: 'Remédio', color: '#dc3545' },
@@ -91,13 +106,82 @@ export default function TelaLembretes({ navigation }: Props) {
       });
       Alert.alert('Sucesso', `Lembrete agendado para tocar todos os dias às ${time}.`);
     } catch (e) {
-      console.log('Notification error:', e);
-      Alert.alert('Aviso', 'Lembrete salvo, mas as notificações nativas podem não funcionar na Web.');
+      Alert.alert('Aviso', 'Lembrete salvo, mas as notificações nativas podem não funcionar neste ambiente.');
     }
 
     setModalVisible(false);
     setTitle('');
     setTime('');
+  };
+
+  const handleSaveMed = () => {
+    if (!nomeMed || !dosagemMed) {
+      Alert.alert('Erro', 'Nome e dosagem são obrigatórios.');
+      return;
+    }
+
+    if (nomeMed.toLowerCase().includes('aspirina') || nomeMed.toLowerCase() === 'aas') {
+      Alert.alert('Atenção: Interação', 'Cuidado ao misturar com anticoagulantes!');
+    }
+
+    addMedicamento({ nome: nomeMed, dosagem: dosagemMed, forma: formaMed, estoque: estoqueMed });
+    setMedModalVisible(false);
+    setNomeMed(''); setDosagemMed(''); setFormaMed(''); setEstoqueMed('');
+  };
+
+  const handleGeneratePDF = async () => {
+    if (medicamentos.length === 0) {
+      Alert.alert('Atenção', 'Você não possui medicamentos cadastrados para gerar o relatório.');
+      return;
+    }
+
+    let rows = medicamentos.map(med => `
+      <tr>
+        <td>${med.nome}</td>
+        <td>${med.dosagem}</td>
+        <td>${med.forma}</td>
+        <td>${med.estoque}</td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <html>
+        <head>
+          <style>
+            body { font-family: 'Helvetica', sans-serif; padding: 20px; }
+            h1 { color: #0056b3; text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #0056b3; color: white; }
+          </style>
+        </head>
+        <body>
+          <h1>Relatório de Medicamentos (Farmácia)</h1>
+          <p>Confira abaixo a lista atualizada de medicamentos em estoque:</p>
+          <table>
+            <tr>
+              <th>Nome</th>
+              <th>Dosagem</th>
+              <th>Formato</th>
+              <th>Estoque</th>
+            </tr>
+            ${rows}
+          </table>
+        </body>
+      </html>
+    `;
+
+    try {
+      const { uri } = await Print.printToFileAsync({ html });
+      const isSharingAvailable = await Sharing.isAvailableAsync();
+      if (isSharingAvailable) {
+        await Sharing.shareAsync(uri);
+      } else {
+        Alert.alert('Aviso', 'O compartilhamento não está disponível neste dispositivo.');
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível gerar o PDF.');
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -107,7 +191,7 @@ export default function TelaLembretes({ navigation }: Props) {
     ]);
   };
 
-  const renderItem = ({ item }: { item: Lembrete }) => (
+  const renderLembrete = ({ item }: { item: Lembrete }) => (
     <View style={styles.reminderCard}>
       <View style={[styles.colorBar, { backgroundColor: item.color }]} />
       <View style={styles.reminderContent}>
@@ -128,25 +212,74 @@ export default function TelaLembretes({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Meus Lembretes</Text>
+        <Text style={styles.title}>Lembretes & Farmácia</Text>
       </View>
 
-      <TouchableOpacity style={styles.newButton} activeOpacity={0.8} onPress={() => setModalVisible(true)}>
-        <Text style={styles.newButtonText}>+ Novo Lembrete</Text>
-      </TouchableOpacity>
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'lembretes' && styles.tabActive]} 
+          onPress={() => setActiveTab('lembretes')}
+        >
+          <Text style={[styles.tabText, activeTab === 'lembretes' && styles.tabTextActive]}>Alarmes</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'farmacia' && styles.tabActive]} 
+          onPress={() => setActiveTab('farmacia')}
+        >
+          <Text style={[styles.tabText, activeTab === 'farmacia' && styles.tabTextActive]}>Estoque Médico</Text>
+        </TouchableOpacity>
+      </View>
 
-      <FlatList
-        data={lembretesData}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<Text style={styles.empty}>Você ainda não possui lembretes.</Text>}
-      />
+      {activeTab === 'lembretes' ? (
+        <>
+          <TouchableOpacity style={styles.newButton} activeOpacity={0.8} onPress={() => setModalVisible(true)}>
+            <Text style={styles.newButtonText}>+ Novo Lembrete</Text>
+          </TouchableOpacity>
+
+          <FlatList
+            data={lembretesData}
+            keyExtractor={(item) => item.id}
+            renderItem={renderLembrete}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={<Text style={styles.empty}>Você ainda não possui lembretes.</Text>}
+          />
+        </>
+      ) : (
+        <>
+          <View style={styles.rowButtons}>
+            <TouchableOpacity style={styles.pdfButton} activeOpacity={0.8} onPress={handleGeneratePDF}>
+              <Text style={styles.newButtonText}>Gerar PDF</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.addMedButton} activeOpacity={0.8} onPress={() => setMedModalVisible(true)}>
+              <Text style={styles.newButtonText}>+ Medicamento</Text>
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={medicamentos}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.medCard}>
+                <View>
+                  <Text style={styles.medTitle}>{item.nome}</Text>
+                  <Text style={styles.medSub}>{item.dosagem} - {item.forma}</Text>
+                </View>
+                <View style={styles.medEstoqueBadge}>
+                  <Text style={styles.medEstoqueText}>Qtd: {item.estoque}</Text>
+                </View>
+              </View>
+            )}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={<Text style={styles.empty}>Nenhum medicamento em estoque.</Text>}
+          />
+        </>
+      )}
 
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Text style={styles.backButtonText}>Voltar</Text>
       </TouchableOpacity>
 
+      {/* Modal Novo Lembrete */}
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -192,6 +325,57 @@ export default function TelaLembretes({ navigation }: Props) {
           </View>
         </View>
       </Modal>
+
+      {/* Modal Novo Medicamento */}
+      <Modal visible={medModalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Novo Medicamento</Text>
+            
+            <Text style={styles.label}>Nome</Text>
+            <TextInput placeholderTextColor="#999" 
+              style={styles.input} 
+              placeholder="Ex: Losartana" 
+              value={nomeMed} 
+              onChangeText={setNomeMed} 
+            />
+
+            <Text style={styles.label}>Dosagem</Text>
+            <TextInput placeholderTextColor="#999" 
+              style={styles.input} 
+              placeholder="Ex: 50mg" 
+              value={dosagemMed} 
+              onChangeText={setDosagemMed} 
+            />
+            
+            <Text style={styles.label}>Formato</Text>
+            <TextInput placeholderTextColor="#999" 
+              style={styles.input} 
+              placeholder="Ex: Comprimido" 
+              value={formaMed} 
+              onChangeText={setFormaMed} 
+            />
+            
+            <Text style={styles.label}>Estoque</Text>
+            <TextInput placeholderTextColor="#999" 
+              style={styles.input} 
+              placeholder="Ex: 30" 
+              value={estoqueMed} 
+              onChangeText={setEstoqueMed} 
+              keyboardType="numeric"
+            />
+
+            <TouchableOpacity style={styles.saveModalBtn} onPress={handleSaveMed}>
+              <Text style={styles.saveModalText}>Salvar Medicamento</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.cancelModalBtn} onPress={() => setMedModalVisible(false)}>
+              <Text style={styles.cancelModalText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
