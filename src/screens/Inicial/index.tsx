@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, SafeAreaView, Dimensions, ScrollView, Ima
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { FontAwesome5, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useStore } from '../../store/useStore';
 import { styles } from './styles';
 
@@ -20,9 +19,8 @@ export default function TelaInicial({ navigation }: Props) {
   const userName = perfil?.nome || 'Paciente';
 
   return (
-    <LinearGradient colors={['#1e3c72', '#2a5298']} style={styles.container}>
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <Text style={styles.title}>Olá, {userName}!</Text>
@@ -30,7 +28,7 @@ export default function TelaInicial({ navigation }: Props) {
               {perfil?.fotoUri ? (
                 <Image source={{ uri: perfil.fotoUri }} style={{ width: 44, height: 44, borderRadius: 22 }} />
               ) : (
-                <Ionicons name="settings-sharp" size={28} color="#fff" />
+                <Ionicons name="settings-sharp" size={28} color="#999" />
               )}
             </TouchableOpacity>
           </View>
@@ -79,7 +77,8 @@ export default function TelaInicial({ navigation }: Props) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+    </SafeAreaView>
   );
 }
+
+
