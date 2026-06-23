@@ -42,7 +42,8 @@ export default function TelaInicial({ navigation }: Props) {
             activeOpacity={0.8}
           >
             <MaterialCommunityIcons name="brain" size={48} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Saúde Mental (Psicologia & Humor)</Text>
+            <Text style={styles.cardText}>Saúde Mental</Text>
+            <Text style={styles.courseTag}>Psicologia</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -51,7 +52,8 @@ export default function TelaInicial({ navigation }: Props) {
             activeOpacity={0.8}
           >
             <FontAwesome5 name="heartbeat" size={48} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Sinais Vitais (Enfermagem)</Text>
+            <Text style={styles.cardText}>Sinais Vitais</Text>
+            <Text style={styles.courseTag}>Enfermagem</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -60,7 +62,8 @@ export default function TelaInicial({ navigation }: Props) {
             activeOpacity={0.8}
           >
             <MaterialCommunityIcons name="pill" size={54} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>Lembretes & Farmácia</Text>
+            <Text style={styles.cardText}>Lembretes</Text>
+            <Text style={styles.courseTag}>Farmácia</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -69,16 +72,8 @@ export default function TelaInicial({ navigation }: Props) {
             activeOpacity={0.8}
           >
             <MaterialCommunityIcons name="run" size={54} color="#fff" style={styles.icon} />
-            <Text style={styles.cardText}>IMC & Educação Física</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.card, { backgroundColor: '#ffc107' }]} 
-            onPress={() => navigation.navigate('Fisioterapia')}
-            activeOpacity={0.8}
-          >
-            <MaterialCommunityIcons name="human-handsup" size={54} color="#333" style={[styles.icon, { color: '#333' }]} />
-            <Text style={[styles.cardText, { color: '#333' }]}>Fisioterapia</Text>
+            <Text style={styles.cardText}>Corpo & Movimento</Text>
+            <Text style={styles.courseTag}>Educação Física & Fisioterapia</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
