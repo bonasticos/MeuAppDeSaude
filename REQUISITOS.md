@@ -15,12 +15,12 @@
 - ❌ **RF05:** Após IMC, coleta de informações médicas: diabetes, problema cardíaco, hipertensão
 - ✅ **RF06:** Registro e histórico de BPM (batimentos por minuto) com opção de editar e salvar medições futuras
 - ✅ **RF07:** Registro e histórico de glicose (mg/dL) com opção de editar e salvar medições futuras
-- ✅ **RF08:** Lembretes de medicamentos com cadastro de nome, dose, periodicidade (diária, semanal, mensal, trimestral, semestral) e alarme em horário específico
-- ✅ **RF09:** Aferição diária de humor: Feliz, Triste, Nervoso, Ansioso — com histórico por data
+- ⚠️ **RF08:** Lembretes de medicamentos com cadastro de nome, dose, periodicidade (diária, semanal, mensal, trimestral, semestral) e alarme em horário específico
+- ⚠️ **RF09:** Aferição diária de humor: Feliz, Triste, Nervoso, Ansioso — com histórico por data
 - ❌ **RF10:** Registro de nível de atividade física: Ativo, De vez em quando, Não pratico
 - ✅ **RF12:** Lembretes de exercícios físicos: alongamento, academia, pilates — com dias e horários configuráveis
 - ❌ **RF13:** Lembrete de hidratação com sugestão de quantidade de água calculada com base no peso, IMC e nível de atividade
-- ✅ **RF14:** Gerenciamento de lembretes: editar frequência, dias da semana e horário de qualquer lembrete ativo
+- ⚠️ **RF14:** Gerenciamento de lembretes: editar frequência, dias da semana e horário de qualquer lembrete ativo
 
 ---
 
