@@ -2,5 +2,16 @@ module.exports = function(api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
+    plugins: [
+      function () {
+        return {
+          visitor: {
+            MetaProperty(path) {
+              path.replaceWithSourceString('process');
+            },
+          },
+        };
+      },
+    ],
   };
 };
