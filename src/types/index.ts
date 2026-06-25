@@ -10,6 +10,7 @@ export interface SinalVital {
   id: string;
   bpm: string;
   glicose: string;
+  glicoseTipo?: string;
   pressao?: string;
   oxigenacao?: string;
   humor?: string;
