@@ -1,4 +1,4 @@
-﻿import { StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -66,6 +66,38 @@ export const styles = StyleSheet.create({
   boldText: {
     fontWeight: 'bold',
     color: '#0056b3',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ccc',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#666',
+    fontSize: 16,
+  },
+  googleButton: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+  },
+  googleButtonText: {
+    color: '#333',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 12,
   },
 });
 
