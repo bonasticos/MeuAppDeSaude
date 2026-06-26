@@ -476,37 +476,20 @@ export default function TelaSinaisVitais({ navigation }: Props) {
 
   const hasGlucose = glucose.length > 0;
   const isGlucoseValid = !hasGlucose || (hasGlucose && glicoseTipo !== null);
+  const isPressaoValid = (pressaoSistolica.length > 0 && pressaoDiastolica.length > 0) || (pressaoSistolica.length === 0 && pressaoDiastolica.length === 0);
+  const hasAnyVital = bpm.length > 0 || hasGlucose || (pressaoSistolica.length > 0 && pressaoDiastolica.length > 0) || oxigenacao.length > 0 || humor !== null || exercicio !== null;
 
-  const isFormValid = bpm.length > 0 && 
-                      glucose.length > 0 && 
-                      isGlucoseValid &&
-                      pressaoSistolica.length > 0 && 
-                      pressaoDiastolica.length > 0 && 
-                      oxigenacao.length > 0 && 
-                      humor !== null && 
-                      exercicio !== null;
-
-  const getMissingFields = () => {
-    const missing = [];
-    if (bpm.length === 0) missing.push('Batimentos Cardíacos');
-    if (glucose.length === 0) missing.push('Glicemia');
-    if (glucose.length > 0 && glicoseTipo === null) missing.push('Tipo de Medição de Glicose');
-    if (pressaoSistolica.length === 0) missing.push('Pressão Sistólica');
-    if (pressaoDiastolica.length === 0) missing.push('Pressão Diastólica');
-    if (oxigenacao.length === 0) missing.push('Saturação de Oxigênio');
-    if (humor === null) missing.push('Como se sente hoje');
-    if (exercicio === null) missing.push('Se fez exercício');
-    return missing;
-  };
+  const isFormValid = hasAnyVital && isGlucoseValid && isPressaoValid;
 
   const handleSave = () => {
     try {
       if (!isFormValid) {
-        const missing = getMissingFields();
-        if (hasGlucose && !glicoseTipo) {
+        if (!isGlucoseValid) {
           Alert.alert('Ops!', 'Como a glicose foi preenchida, o tipo de medição (Jejum, Pré-prandial ou Pós-prandial) é obrigatório.');
+        } else if (!isPressaoValid) {
+          Alert.alert('Ops!', 'Para registrar a pressão arterial, preencha tanto a Sistólica quanto a Diastólica.');
         } else {
-          Alert.alert('Campos Pendentes', 'Por favor, preencha todos os campos obrigatórios:\n\n' + missing.map(f => '• ' + f).join('\n'));
+          Alert.alert('Atenção', 'Por favor, preencha pelo menos um sinal vital ou informação para registrar.');
         }
         return;
       }
@@ -517,7 +500,7 @@ export default function TelaSinaisVitais({ navigation }: Props) {
       const diaNum = parseInt(pressaoDiastolica, 10);
       const oxNum = parseInt(oxigenacao, 10);
 
-      const pressaoConsolidada = `${pressaoSistolica}/${pressaoDiastolica}`;
+      const pressaoConsolidada = (pressaoSistolica && pressaoDiastolica) ? `${pressaoSistolica}/${pressaoDiastolica}` : undefined;
 
       addSinalVital({ 
         bpm, 
@@ -525,8 +508,8 @@ export default function TelaSinaisVitais({ navigation }: Props) {
         glicoseTipo: glicoseTipo || undefined,
         pressao: pressaoConsolidada,
         oxigenacao,
-        humor,
-        exercicio
+        humor: humor !== null ? humor : undefined,
+        exercicio: exercicio !== null ? exercicio : undefined
       });
       
       // Validação final de salvamento
@@ -820,26 +803,32 @@ export default function TelaSinaisVitais({ navigation }: Props) {
                   </View>
                   
                   <View style={styles.historyContent}>
-                    <View style={styles.historyRow}>
-                      <Text>❤️</Text>
-                      <Text style={styles.historyValue}>{h.bpm} bpm</Text>
-                    </View>
-                    <View style={styles.historyRow}>
-                      <Text>🩸</Text>
-                      <Text style={styles.historyValue}>
-                        {h.glicose} mg/dL {h.glicoseTipo ? `(${h.glicoseTipo})` : ''}
-                      </Text>
-                    </View>
-                    <View style={styles.historyRow}>
-                      <Text>🩺</Text>
-                      <Text style={styles.historyValue}>{h.pressao} mmHg</Text>
-                    </View>
-                    {h.oxigenacao && (
+                    {h.bpm ? (
+                      <View style={styles.historyRow}>
+                        <Text>❤️</Text>
+                        <Text style={styles.historyValue}>{h.bpm} bpm</Text>
+                      </View>
+                    ) : null}
+                    {h.glicose ? (
+                      <View style={styles.historyRow}>
+                        <Text>🩸</Text>
+                        <Text style={styles.historyValue}>
+                          {h.glicose} mg/dL {h.glicoseTipo ? `(${h.glicoseTipo})` : ''}
+                        </Text>
+                      </View>
+                    ) : null}
+                    {h.pressao ? (
+                      <View style={styles.historyRow}>
+                        <Text>🩺</Text>
+                        <Text style={styles.historyValue}>{h.pressao} mmHg</Text>
+                      </View>
+                    ) : null}
+                    {h.oxigenacao ? (
                       <View style={styles.historyRow}>
                         <Text>🫁</Text>
                         <Text style={styles.historyValue}>{h.oxigenacao}% SpO2</Text>
                       </View>
-                    )}
+                    ) : null}
                     {(h.humor || h.exercicio !== undefined) && (
                       <View style={[styles.historyRow, { marginTop: 4, flexWrap: 'wrap' }]}>
                         {h.humor && <Text style={{fontSize: 13, color: '#666', marginRight: 8}}>Humor: {h.humor}</Text>}
