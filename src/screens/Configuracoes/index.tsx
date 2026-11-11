@@ -108,6 +108,10 @@ export default function TelaConfiguracoes({ navigation }: Props) {
           <Text style={styles.recoverButtonText}>Recuperar Senha</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.aboutUncButton} onPress={() => navigation.navigate('SobreUNC')}>
+          <Text style={styles.aboutUncButtonText}>Sobre a UNC & Desenvolvedores</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Sair do Aplicativo</Text>
         </TouchableOpacity>

@@ -11,6 +11,7 @@ import TelaCadastro from '../screens/Cadastro';
 import TelaPerfil from '../screens/Perfil';
 import TelaFisioterapia from '../screens/Fisioterapia';
 import TelaConfiguracoes from '../screens/Configuracoes';
+import TelaSobreUNC from '../screens/SobreUNC';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -22,6 +23,7 @@ export type RootStackParamList = {
   Lembretes: undefined;
   Fisioterapia: undefined;
   Configuracoes: undefined;
+  SobreUNC: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -39,6 +41,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Lembretes" component={TelaLembretes} />
         <Stack.Screen name="Fisioterapia" component={TelaFisioterapia} />
         <Stack.Screen name="Configuracoes" component={TelaConfiguracoes} />
+        <Stack.Screen name="SobreUNC" component={TelaSobreUNC} />
       </Stack.Navigator>
     </NavigationContainer>
   );

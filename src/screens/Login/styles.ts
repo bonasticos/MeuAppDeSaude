@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: 24,
     justifyContent: 'center',
   },
@@ -98,6 +98,41 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 12,
+  },
+  guestButton: {
+    marginTop: 12,
+    backgroundColor: '#E9F2FF',
+    borderWidth: 1,
+    borderColor: '#0056b3',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guestButtonText: {
+    color: '#0056b3',
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+  uncFooter: {
+    marginTop: 22,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: '#EAF2FA',
+    alignItems: 'center',
+  },
+  uncFooterText: {
+    fontSize: 13,
+    color: '#103457',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  uncFooterLink: {
+    fontSize: 13,
+    color: '#0056b3',
+    fontWeight: '800',
+    marginTop: 2,
   },
 });
 

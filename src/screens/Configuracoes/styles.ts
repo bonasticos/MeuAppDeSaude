@@ -40,6 +40,9 @@ export const styles = StyleSheet.create({
   recoverButton: { backgroundColor: '#ffc107', padding: 16, borderRadius: 12, width: '100%', alignItems: 'center', marginTop: 16 },
   recoverButtonText: { color: '#333', fontSize: 18, fontWeight: 'bold' },
 
+  aboutUncButton: { backgroundColor: '#103457', padding: 16, borderRadius: 12, width: '100%', alignItems: 'center', marginTop: 16 },
+  aboutUncButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+
   backButton: { padding: 16, marginTop: 16, alignItems: 'center' },
   backButtonText: { color: '#666', fontSize: 16, fontWeight: 'bold' },
 

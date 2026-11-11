@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert, Image, ScrollView } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
@@ -71,13 +71,17 @@ export default function LoginScreen({ navigation }: Props) {
     }
   };
 
+  const handleGuestLogin = () => {
+    navigation.replace('Inicial');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
         style={styles.keyboardView}
       >
-        <View style={styles.content}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={{ alignItems: 'center', marginBottom: 24 }}>
             <Image 
               source={require('../../../assets/logo.png')} 
@@ -129,10 +133,23 @@ export default function LoginScreen({ navigation }: Props) {
             <Text style={styles.googleButtonText}>Entrar com Google</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity 
+            style={styles.guestButton} 
+            onPress={handleGuestLogin}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.guestButtonText}>Entrar sem Login (Acesso Rápido)</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.registerLink} onPress={() => navigation.navigate('Cadastro')}>
             <Text style={styles.registerLinkText}>Não tem uma conta? <Text style={styles.boldText}>Cadastre-se</Text></Text>
           </TouchableOpacity>
-        </View>
+
+          <TouchableOpacity style={styles.uncFooter} onPress={() => navigation.navigate('SobreUNC')} activeOpacity={0.8}>
+            <Text style={styles.uncFooterText}>Desenvolvido por Engenharia de Software • UNC</Text>
+            <Text style={styles.uncFooterLink}>Conheça a Universidade e o Projeto →</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

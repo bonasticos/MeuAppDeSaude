@@ -76,6 +76,26 @@ export default function TelaInicial({ navigation }: Props) {
             <Text style={[styles.courseTag, { color: 'rgba(51, 51, 51, 0.7)' }]}>Educação Física & Fisioterapia</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Card Institucional / Propaganda UNC (About Us) */}
+        <TouchableOpacity
+          style={styles.uncPromoCard}
+          onPress={() => navigation.navigate('SobreUNC')}
+          activeOpacity={0.88}
+        >
+          <View style={styles.uncPromoCircle}>
+            <Text style={styles.uncWatermark}>UNC</Text>
+          </View>
+          <Text style={styles.uncPromoEyebrow}>A UNC NA SUA MÃO • ENG. DE SOFTWARE</Text>
+          <Text style={styles.uncPromoTitle}>Universidade e comunidade mais próximas.</Text>
+          <Text style={styles.uncPromoDesc}>
+            Desenvolvido por alunos de Engenharia de Software da UNC junto aos cursos de saúde, clínicas-escola e projetos de extensão.
+          </Text>
+          <View style={styles.uncPromoCtaRow}>
+            <Text style={styles.uncPromoCtaText}>Explorar a UNC & Sobre Nós</Text>
+            <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
