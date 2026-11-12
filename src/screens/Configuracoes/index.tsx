@@ -230,7 +230,7 @@ export default function TelaConfiguracoes({ navigation }: Props) {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.aboutUncButton} onPress={() => navigation.navigate('SobreUNC')}>
-          <Text style={styles.aboutUncButtonText}>Sobre a UNC & Desenvolvedores</Text>
+          <Text style={styles.aboutUncButtonText}>Serviços da UNC à Comunidade</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>

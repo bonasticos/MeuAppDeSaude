@@ -18,12 +18,11 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { styles } from './styles';
 import {
-  ACESSO_RAPIDO_UNC,
   CAMPI_UNC,
   CLINICA_ESCOLA_GERAL,
-  CURSOS_SAUDE_UNC,
+  SERVICOS_CURSOS_UNC,
   CampusUNC,
-  CursoClinicaInfo,
+  ServicoCursoInfo,
   UNC_SITE_URL,
 } from './uncData';
 
@@ -38,15 +37,6 @@ interface UserCoords {
   lng: number;
 }
 
-const CURSOS_PARCEIROS = [
-  'Engenharia de Software',
-  'Medicina',
-  'Fisioterapia',
-  'Odontologia',
-  'Psicologia',
-  'Enfermagem',
-];
-
 function calcularDistanciaKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const R = 6371;
@@ -60,15 +50,18 @@ function calcularDistanciaKm(lat1: number, lon1: number, lat2: number, lon2: num
 }
 
 export default function TelaSobreUNC({ navigation }: Props) {
-  const [selectedInfo, setSelectedInfo] = useState<CursoClinicaInfo | null>(null);
-  const [modalTab, setModalTab] = useState<'curso' | 'clinica' | 'gps'>('curso');
+  const [selectedInfo, setSelectedInfo] = useState<ServicoCursoInfo | null>(null);
+  const [modalTab, setModalTab] = useState<'servicos' | 'agendamento' | 'gps'>('servicos');
   const [selectedCampusMap, setSelectedCampusMap] = useState<CampusUNC | null>(null);
 
   const [userCoords, setUserCoords] = useState<UserCoords | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
 
-  const openInfoWindow = (item: CursoClinicaInfo, initialTab: 'curso' | 'clinica' | 'gps' = 'curso') => {
+  const openInfoWindow = (
+    item: ServicoCursoInfo,
+    initialTab: 'servicos' | 'agendamento' | 'gps' = 'servicos'
+  ) => {
     setSelectedInfo(item);
     setModalTab(initialTab);
   };
@@ -112,7 +105,7 @@ export default function TelaSobreUNC({ navigation }: Props) {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       });
-    } catch (err) {
+    } catch {
       setGpsError('Não foi possível obter o GPS agora. Verifique se a localização está ativada no dispositivo.');
     } finally {
       setGpsLoading(false);
@@ -192,7 +185,7 @@ export default function TelaSobreUNC({ navigation }: Props) {
             </View>
             <View>
               <Text style={styles.brandTitle}>UNIVERSIDADE DO CONTESTADO</Text>
-              <Text style={styles.brandSub}>Clínicas-Escola, Cursos & Sobre Nós</Text>
+              <Text style={styles.brandSub}>Serviços de Saúde à Comunidade</Text>
             </View>
           </View>
 
@@ -201,53 +194,53 @@ export default function TelaSobreUNC({ navigation }: Props) {
           </View>
         </View>
 
-        {/* Banner Hero Institucional */}
+        {/* Banner Hero — Serviços à Comunidade */}
         <View style={styles.heroCard}>
           <View style={styles.heroCircleTop} />
           <View style={styles.heroCircleBottom} />
 
           <View style={styles.heroIconBox}>
-            <MaterialCommunityIcons name="creation" size={22} color="#FFFFFF" />
+            <MaterialCommunityIcons name="hand-heart-outline" size={22} color="#FFFFFF" />
           </View>
 
-          <Text style={styles.heroEyebrow}>ENGENHARIA DE SOFTWARE • UNC</Text>
-          <Text style={styles.heroTitle}>A UNC faz parte da cidade. E agora, do seu cuidado diário.</Text>
+          <Text style={styles.heroEyebrow}>CLÍNICAS-ESCOLA & ATENDIMENTOS • UNC</Text>
+          <Text style={styles.heroTitle}>Serviços gratuitos e acessíveis para cuidar da comunidade.</Text>
           <Text style={styles.heroDescription}>
-            Desenvolvido por acadêmicos de Engenharia de Software da Universidade do Contestado, conectando tecnologia,
-            clínicas-escola e os cursos da saúde com toda a comunidade.
+            Confira os atendimentos prestados à população pelos cursos da saúde da UNC — consultas, reabilitação,
+            odontologia, psicologia e enfermagem — com telefones e localização por GPS.
           </Text>
 
           <View style={styles.heroCtaRow}>
             <TouchableOpacity
               style={styles.heroCta}
-              onPress={() => openInSeparateWindow(UNC_SITE_URL)}
+              onPress={() => openInfoWindow(CLINICA_ESCOLA_GERAL, 'agendamento')}
               activeOpacity={0.85}
             >
-              <Text style={styles.heroCtaText}>Site da UNC (Janela)</Text>
-              <Ionicons name="open-outline" size={17} color="#0F2942" />
+              <Ionicons name="medkit-outline" size={17} color="#0F2942" />
+              <Text style={styles.heroCtaText}>Como Agendar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.heroCtaSecondary}
-              onPress={() => openInfoWindow(CLINICA_ESCOLA_GERAL, 'clinica')}
+              onPress={() => openInSeparateWindow(UNC_SITE_URL)}
               activeOpacity={0.85}
             >
-              <Ionicons name="medkit-outline" size={17} color="#FFFFFF" />
-              <Text style={styles.heroCtaSecondaryText}>Clínica Escola</Text>
+              <Text style={styles.heroCtaSecondaryText}>Portal UNC</Text>
+              <Ionicons name="open-outline" size={17} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Seção Clínica Escola & Cursos da Saúde */}
-        <Text style={styles.sectionTitle}>Clínica Escola & Cursos da Saúde</Text>
+        {/* Seção Clínica Escola & Serviços por Curso */}
+        <Text style={styles.sectionTitle}>Serviços por Área à Comunidade</Text>
         <Text style={styles.sectionHint}>
-          Toque em qualquer card para abrir a janela com informações do curso, atendimentos e localização GPS.
+          Toque em uma área para ver os serviços oferecidos à população, contatos de agendamento e rotas no GPS.
         </Text>
 
-        {/* Card Principal Clínica Escola */}
+        {/* Card Principal Clínica Escola / Espaço Mais Saúde */}
         <TouchableOpacity
           style={styles.clinicFeaturedCard}
-          onPress={() => openInfoWindow(CLINICA_ESCOLA_GERAL, 'clinica')}
+          onPress={() => openInfoWindow(CLINICA_ESCOLA_GERAL, 'servicos')}
           activeOpacity={0.85}
         >
           <View style={styles.clinicFeaturedTop}>
@@ -261,29 +254,29 @@ export default function TelaSobreUNC({ navigation }: Props) {
           <Text style={styles.clinicFeaturedSub}>{CLINICA_ESCOLA_GERAL.subtituloCard}</Text>
           <View style={styles.clinicFeaturedFooter}>
             <Text style={styles.clinicFeaturedPhone}>📞 Espaço Mais Saúde: (47) 3641-5519</Text>
-            <Text style={styles.clinicFeaturedLink}>Abrir janela →</Text>
+            <Text style={styles.clinicFeaturedLink}>Ver serviços →</Text>
           </View>
         </TouchableOpacity>
 
-        {/* Grid dos Cursos: Medicina, Fisio, Odonto, Psico, Enfermagem + Eng. Software */}
+        {/* Grid de Serviços à Comunidade: Medicina, Fisio, Odonto, Psico e Enfermagem */}
         <View style={styles.grid}>
-          {CURSOS_SAUDE_UNC.map((curso) => (
+          {SERVICOS_CURSOS_UNC.map((servico) => (
             <TouchableOpacity
-              key={curso.id}
+              key={servico.id}
               style={styles.quickCard}
-              onPress={() => openInfoWindow(curso, 'curso')}
+              onPress={() => openInfoWindow(servico, 'servicos')}
               activeOpacity={0.8}
             >
               <View>
-                <View style={[styles.quickIconBox, { backgroundColor: curso.corBadge }]}>
+                <View style={[styles.quickIconBox, { backgroundColor: servico.corBadge }]}>
                   <Ionicons
-                    name={curso.icone as keyof typeof Ionicons.glyphMap}
+                    name={servico.icone as keyof typeof Ionicons.glyphMap}
                     size={22}
-                    color={curso.corIcone}
+                    color={servico.corIcone}
                   />
                 </View>
-                <Text style={styles.quickTitle}>{curso.titulo}</Text>
-                <Text style={styles.quickSub}>{curso.subtituloCard}</Text>
+                <Text style={styles.quickTitle}>{servico.titulo}</Text>
+                <Text style={styles.quickSub}>{servico.subtituloCard}</Text>
               </View>
               <Ionicons name="open-outline" size={17} color="#194B7D" style={styles.quickArrow} />
             </TouchableOpacity>
@@ -293,7 +286,7 @@ export default function TelaSobreUNC({ navigation }: Props) {
         {/* Seção Localização por GPS dos Campi & Clínicas */}
         <Text style={styles.sectionTitle}>Localização por GPS — Campi UNC</Text>
         <Text style={styles.sectionHint}>
-          Ative seu GPS para calcular a distância até cada campus ou abra o mapa em uma janela sem sair do app.
+          Ative seu GPS para encontrar a unidade mais próxima de você e abrir o mapa ou rota até o atendimento.
         </Text>
 
         <View style={styles.gpsSectionCard}>
@@ -391,100 +384,34 @@ export default function TelaSobreUNC({ navigation }: Props) {
           })}
         </View>
 
-        {/* Acesso rápido UNC */}
-        <Text style={styles.sectionTitle}>Acesso rápido UNC</Text>
-        <View style={styles.grid}>
-          {ACESSO_RAPIDO_UNC.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.quickCard}
-              onPress={() => openInfoWindow(item, 'curso')}
-              activeOpacity={0.8}
-            >
-              <View>
-                <View style={styles.quickIconBox}>
-                  <Ionicons
-                    name={item.icone as keyof typeof Ionicons.glyphMap}
-                    size={22}
-                    color="#194B7D"
-                  />
-                </View>
-                <Text style={styles.quickTitle}>{item.titulo}</Text>
-                <Text style={styles.quickSub}>{item.subtituloCard}</Text>
-              </View>
-              <Ionicons name="open-outline" size={17} color="#194B7D" style={styles.quickArrow} />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Sobre o Projeto (About Us) */}
-        <Text style={styles.sectionTitle}>Sobre o MeuAppDeSaúde</Text>
-        <View style={styles.aboutCard}>
-          <View style={styles.aboutHeaderRow}>
-            <View style={styles.aboutIconCircle}>
-              <Ionicons name="people-outline" size={22} color="#103457" />
-            </View>
-            <Text style={styles.aboutTitle}>Projeto Acadêmico Multidisciplinar UNC</Text>
-          </View>
-          <Text style={styles.aboutText}>
-            O MeuAppDeSaúde nasceu na Universidade do Contestado para unir tecnologia acessível (pensada também para o
-            público idoso) ao acompanhamento preventivo de saúde. Desenvolvido pelos alunos de Engenharia de Software em
-            parceria com os cursos de saúde da UNC:
-          </Text>
-          <View style={styles.tagRow}>
-            {CURSOS_PARCEIROS.map((curso) => (
-              <View key={curso} style={styles.chip}>
-                <Text style={styles.chipText}>{curso}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
         {/* Card Verde de Impacto Regional */}
         <View style={styles.impactCard}>
           <View style={styles.impactIconBox}>
             <Ionicons name="heart-half-outline" size={22} color="#166534" />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.impactEyebrow}>IMPACTO NA REGIÃO</Text>
-            <Text style={styles.impactTitle}>UNC e comunidade</Text>
+            <Text style={styles.impactEyebrow}>ATENDIMENTO SUPERVISADO</Text>
+            <Text style={styles.impactTitle}>UNC próxima da população</Text>
             <Text style={styles.impactText}>
-              Clínicas-escola, projetos de extensão e o curso de Engenharia de Software aproximam ensino, inovação e
-              atendimento em saúde à população.
+              Os atendimentos nas clínicas-escola são conduzidos sob supervisão docente, levando saúde preventiva,
+              reabilitação e acolhimento para toda a região.
             </Text>
           </View>
         </View>
 
-        {/* Construção colaborativa entre fases */}
-        <Text style={styles.sectionTitle}>Construído entre fases na UNC</Text>
-        <View style={styles.phasesCard}>
-          <View style={styles.phaseItem}>
-            <View style={styles.phaseBadge}>
-              <Text style={styles.phaseBadgeText}>1ª / 2ª Fase</Text>
+        {/* Nota objetiva sobre o aplicativo */}
+        <View style={styles.aboutCard}>
+          <View style={styles.aboutHeaderRow}>
+            <View style={styles.aboutIconCircle}>
+              <Ionicons name="phone-portrait-outline" size={22} color="#103457" />
             </View>
-            <Text style={styles.phaseDesc}>
-              Levantamento de requisitos junto aos cursos de saúde, design acessível e construção de novas telas e
-              modais.
-            </Text>
+            <Text style={styles.aboutTitle}>Sobre este Aplicativo</Text>
           </View>
-
-          <View style={styles.phaseItem}>
-            <View style={styles.phaseBadge}>
-              <Text style={styles.phaseBadgeText}>3ª / 4ª Fase</Text>
-            </View>
-            <Text style={styles.phaseDesc}>
-              Modelagem de dados, gerenciamento de estado offline-first, questionários clínicos e visualização gráfica.
-            </Text>
-          </View>
-
-          <View style={[styles.phaseItem, { marginBottom: 0 }]}>
-            <View style={styles.phaseBadge}>
-              <Text style={styles.phaseBadgeText}>5ª / 6ª Fase</Text>
-            </View>
-            <Text style={styles.phaseDesc}>
-              Arquitetura base em React Native & Expo, integração em nuvem com Supabase, segurança LGPD e revisão técnica.
-            </Text>
-          </View>
+          <Text style={[styles.aboutText, { marginBottom: 0 }]}>
+            Este aplicativo foi criado como um projeto de curricularização da extensão no curso de Engenharia de Software
+            da UNC, com o objetivo de facilitar o cuidado diário com a saúde e aproximar a comunidade dos serviços
+            prestados pelas clínicas-escola da universidade.
+          </Text>
         </View>
 
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
@@ -492,7 +419,7 @@ export default function TelaSobreUNC({ navigation }: Props) {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* JANELA MODAL DE DETALHES DO CURSO / CLÍNICA ESCOLA (sem trocar de aba) */}
+      {/* JANELA MODAL DE DETALHES DOS SERVIÇOS À COMUNIDADE (sem trocar de aba) */}
       <Modal
         visible={selectedInfo !== null}
         transparent
@@ -512,24 +439,22 @@ export default function TelaSobreUNC({ navigation }: Props) {
               {/* Abas internas da janela */}
               <View style={styles.modalTabBar}>
                 <TouchableOpacity
-                  style={[styles.modalTabBtn, modalTab === 'curso' && styles.modalTabBtnActive]}
-                  onPress={() => setModalTab('curso')}
+                  style={[styles.modalTabBtn, modalTab === 'servicos' && styles.modalTabBtnActive]}
+                  onPress={() => setModalTab('servicos')}
                 >
-                  <Text style={[styles.modalTabText, modalTab === 'curso' && styles.modalTabTextActive]}>
-                    Informações
+                  <Text style={[styles.modalTabText, modalTab === 'servicos' && styles.modalTabTextActive]}>
+                    Serviços
                   </Text>
                 </TouchableOpacity>
 
-                {selectedInfo?.clinicaEscola && (
-                  <TouchableOpacity
-                    style={[styles.modalTabBtn, modalTab === 'clinica' && styles.modalTabBtnActive]}
-                    onPress={() => setModalTab('clinica')}
-                  >
-                    <Text style={[styles.modalTabText, modalTab === 'clinica' && styles.modalTabTextActive]}>
-                      Clínica Escola
-                    </Text>
-                  </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                  style={[styles.modalTabBtn, modalTab === 'agendamento' && styles.modalTabBtnActive]}
+                  onPress={() => setModalTab('agendamento')}
+                >
+                  <Text style={[styles.modalTabText, modalTab === 'agendamento' && styles.modalTabTextActive]}>
+                    Agendamento
+                  </Text>
+                </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.modalTabBtn, modalTab === 'gps' && styles.modalTabBtnActive]}
@@ -541,67 +466,48 @@ export default function TelaSobreUNC({ navigation }: Props) {
                 </TouchableOpacity>
               </View>
 
-              {modalTab === 'curso' && selectedInfo && (
+              {modalTab === 'servicos' && selectedInfo && (
                 <View>
-                  {(selectedInfo.duracao || selectedInfo.modalidade || selectedInfo.turno) && (
-                    <View style={styles.metaGrid}>
-                      {selectedInfo.duracao && (
-                        <View style={styles.metaBox}>
-                          <Text style={styles.metaLabel}>DURAÇÃO</Text>
-                          <Text style={styles.metaValue}>{selectedInfo.duracao}</Text>
-                        </View>
-                      )}
-                      {selectedInfo.modalidade && (
-                        <View style={styles.metaBox}>
-                          <Text style={styles.metaLabel}>MODALIDADE</Text>
-                          <Text style={styles.metaValue}>{selectedInfo.modalidade}</Text>
-                        </View>
-                      )}
-                      {selectedInfo.turno && (
-                        <View style={styles.metaBox}>
-                          <Text style={styles.metaLabel}>TURNO</Text>
-                          <Text style={styles.metaValue}>{selectedInfo.turno}</Text>
-                        </View>
-                      )}
-                      <View style={styles.metaBox}>
-                        <Text style={styles.metaLabel}>CAMPI</Text>
-                        <Text style={styles.metaValue}>{selectedInfo.campiResumo}</Text>
-                      </View>
+                  <View style={styles.metaGrid}>
+                    <View style={styles.metaBox}>
+                      <Text style={styles.metaLabel}>PÚBLICO ATENDIDO</Text>
+                      <Text style={styles.metaValue}>{selectedInfo.publicoAlvo}</Text>
                     </View>
-                  )}
+                    <View style={styles.metaBox}>
+                      <Text style={styles.metaLabel}>UNIDADES COM ATENDIMENTO</Text>
+                      <Text style={styles.metaValue}>{selectedInfo.campiResumo}</Text>
+                    </View>
+                  </View>
 
-                  <Text style={styles.modalSubheading}>Objetivos e Proposta na UNC</Text>
-                  <Text style={styles.modalParagraph}>{selectedInfo.objetivos}</Text>
+                  <Text style={styles.modalSubheading}>Como funciona o atendimento</Text>
+                  <Text style={styles.modalParagraph}>{selectedInfo.descricaoAtendimento}</Text>
 
-                  <Text style={styles.modalSubheading}>Perfil do Egresso</Text>
-                  <Text style={styles.modalParagraph}>{selectedInfo.perfilEgresso}</Text>
-
-                  <Text style={styles.modalSubheading}>Áreas de Atuação e Destaques</Text>
-                  {selectedInfo.areasAtuacao.map((area, idx) => (
+                  <Text style={styles.modalSubheading}>Serviços prestados à comunidade</Text>
+                  {selectedInfo.servicosComunidade.map((item, idx) => (
                     <View key={idx} style={styles.bulletRow}>
                       <Text style={styles.bulletDot}>•</Text>
-                      <Text style={styles.bulletText}>{area}</Text>
+                      <Text style={styles.bulletText}>{item}</Text>
                     </View>
                   ))}
                 </View>
               )}
 
-              {modalTab === 'clinica' && selectedInfo?.clinicaEscola && (
+              {modalTab === 'agendamento' && selectedInfo && (
                 <View>
                   <View style={styles.clinicBoxInModal}>
                     <Text style={[styles.modalSubheading, { marginTop: 0, color: '#166534' }]}>
                       {selectedInfo.clinicaEscola.titulo}
                     </Text>
                     <Text style={styles.modalParagraph}>{selectedInfo.clinicaEscola.descricao}</Text>
-                    <Text style={styles.modalSubheading}>Como Agendar / Atendimento</Text>
+                    <Text style={styles.modalSubheading}>Como solicitar atendimento</Text>
                     <Text style={[styles.modalParagraph, { marginBottom: 8 }]}>
                       {selectedInfo.clinicaEscola.comoAgendar}
                     </Text>
-                    <Text style={{ fontSize: 14, fontWeight: '800', color: '#0F2942' }}>
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: '#0F2942' }}>
                       📞 Contato: {selectedInfo.clinicaEscola.contato}
                     </Text>
                     {selectedInfo.clinicaEscola.email && (
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: '#194B7D', marginTop: 4 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '600', color: '#194B7D', marginTop: 4 }}>
                         ✉️ E-mail: {selectedInfo.clinicaEscola.email}
                       </Text>
                     )}
@@ -609,7 +515,7 @@ export default function TelaSobreUNC({ navigation }: Props) {
 
                   <TouchableOpacity
                     style={[styles.modalPrimaryBtn, { backgroundColor: '#166534' }]}
-                    onPress={() => ligarTelefone(selectedInfo.clinicaEscola!.contato)}
+                    onPress={() => ligarTelefone(selectedInfo.clinicaEscola.contato)}
                   >
                     <Ionicons name="call" size={18} color="#FFFFFF" />
                     <Text style={styles.modalPrimaryBtnText}>Ligar para Agendamento</Text>
@@ -749,7 +655,7 @@ export default function TelaSobreUNC({ navigation }: Props) {
                 {selectedCampusMap.destaque && (
                   <View style={styles.clinicBoxInModal}>
                     <Text style={[styles.modalSubheading, { marginTop: 0, color: '#166534' }]}>
-                      Destaques neste Campus
+                      Serviços nesta Unidade
                     </Text>
                     <Text style={[styles.modalParagraph, { marginBottom: 0 }]}>{selectedCampusMap.destaque}</Text>
                   </View>

@@ -86,13 +86,13 @@ export default function TelaInicial({ navigation }: Props) {
           <View style={styles.uncPromoCircle}>
             <Text style={styles.uncWatermark}>UNC</Text>
           </View>
-          <Text style={styles.uncPromoEyebrow}>A UNC NA SUA MÃO • ENG. DE SOFTWARE</Text>
-          <Text style={styles.uncPromoTitle}>Universidade e comunidade mais próximas.</Text>
+          <Text style={styles.uncPromoEyebrow}>A UNC NA SUA MÃO • SERVIÇOS À COMUNIDADE</Text>
+          <Text style={styles.uncPromoTitle}>Clínicas-escola e serviços da UNC.</Text>
           <Text style={styles.uncPromoDesc}>
-            Desenvolvido por alunos de Engenharia de Software da UNC junto aos cursos de saúde, clínicas-escola e projetos de extensão.
+            Confira os atendimentos prestados à comunidade pelos cursos de saúde, contatos de agendamento e rotas por GPS.
           </Text>
           <View style={styles.uncPromoCtaRow}>
-            <Text style={styles.uncPromoCtaText}>Explorar a UNC & Sobre Nós</Text>
+            <Text style={styles.uncPromoCtaText}>Ver Serviços da UNC</Text>
             <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
           </View>
         </TouchableOpacity>

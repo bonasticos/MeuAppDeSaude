@@ -1,6 +1,6 @@
 # Meu App de Saúde (Health Tracker — UNC)
 
-Aplicativo móvel e web *offline-first* desenvolvido em **React Native + Expo + TypeScript** pelos alunos de **Engenharia de Software da Universidade do Contestado (UNC)** em parceria com os cursos da área da Saúde (**Psicologia, Enfermagem, Farmácia, Educação Física, Fisioterapia, Medicina e Odontologia**), para apoiar pacientes no acompanhamento diário de sinais vitais, saúde mental, medicamentos, atividade física e informações das Clínicas-Escola da UNC.
+Aplicativo móvel e web *offline-first* desenvolvido em **React Native + Expo + TypeScript** como **projeto de curricularização da extensão** do curso de Engenharia de Software da **Universidade do Contestado (UNC)** em parceria com os cursos da área da Saúde (**Psicologia, Enfermagem, Farmácia, Educação Física, Fisioterapia, Medicina e Odontologia**), para apoiar pacientes no acompanhamento diário de saúde e divulgar os serviços prestados pelas Clínicas-Escola da UNC à comunidade.
 
 ---
 
@@ -65,14 +65,14 @@ src/
 ├── screens/
 │   ├── Login/                  # Autenticação (Supabase + Google OAuth + recuperação de senha + admin/admin + acesso rápido)
 │   ├── Cadastro/               # Criação de conta (Supabase signUp + perfil inicial + modo offline)
-│   ├── Inicial/                # Dashboard unificado + acesso institucional à UNC
+│   ├── Inicial/                # Dashboard unificado + acesso aos serviços das Clínicas-Escola da UNC
 │   ├── Perfil/                 # IMC, gráfico de Peso/IMC, comorbidades, alergias, meta de água e diário de treinos (kcal)
 │   ├── SinaisVitais/           # BPM, glicemia, PA, SpO2, temperatura, gráfico de evolução, checklist e CRUD
 │   ├── Humor/                  # Diário de humor, gráfico semanal, linha do tempo e questionários PHQ-9 / GAD-7
 │   ├── Lembretes/              # Alarmes editáveis (useStore), estoque completo, baixa automática, histórico e PDF
 │   ├── Fisioterapia/           # Registro de dor (escala EVA), gráfico de evolução e histórico
 │   ├── Configuracoes/          # Edição de perfil, avatar (Storage + galeria), recuperação de senha e logout
-│   └── SobreUNC/               # Informações da UNC, Clínicas-Escola e localização por GPS
+│   └── SobreUNC/               # Serviços à comunidade por curso, Clínicas-Escola, agendamento e GPS
 ├── services/
 │   ├── supabase.ts             # Cliente Supabase + detecção de configuração (.env)
 │   └── db.ts                   # Funções CRUD, Realtime e upload de avatar (Supabase Storage)
@@ -89,18 +89,18 @@ supabase/
 ## 🛠️ Status Atual das Telas
 
 1. **🔑 Login (`src/screens/Login`)**
-   - **Funciona:** Acesso demo (`admin` / `admin`), botão **Entrar sem Login (Acesso Rápido)**, login real com Supabase (`signInWithPassword` e Google OAuth via `signInWithIdToken` quando `.env` estiver configurado), modal de recuperação de senha (`resetPasswordForEmail`), persistência automática de sessão no `AppNavigator` (`getSession` + `onAuthStateChange`) e acesso à tela **Sobre a UNC**.
+   - **Funciona:** Acesso demo (`admin` / `admin`), botão **Entrar sem Login (Acesso Rápido)**, login real com Supabase (`signInWithPassword` e Google OAuth via `signInWithIdToken` quando `.env` estiver configurado), modal de recuperação de senha (`resetPasswordForEmail`), persistência automática de sessão no `AppNavigator` (`getSession` + `onAuthStateChange`) e atalho para os **Serviços das Clínicas-Escola da UNC**.
 
 2. **📝 Cadastro (`src/screens/Cadastro`)**
    - **Funciona:** Cadastro integrado ao `supabase.auth.signUp` (criando registro inicial na tabela `perfis` quando a sessão é autenticada) com fallback local offline (`useStore`), nome completo, validação de senha e confirmação.
    - **Pendente:** Aceite obrigatório dos Termos de Uso e Política de Privacidade LGPD ([#26](https://github.com/bonasticos/MeuAppDeSaude/issues/26)).
 
 3. **🏠 Inicial (`src/screens/Inicial`)**
-   - **Funciona:** Exibe saudação e avatar do usuário no `useStore`, os **4 cartões principais por curso** (**Saúde Mental / Psicologia**, **Sinais Vitais / Enfermagem**, **Lembretes / Farmácia** e **Corpo & Movimento / Ed. Física & Fisioterapia**) padronizados com acessibilidade `RNF01`, além do **cartão promocional institucional da UNC** (`Explorar a UNC & Sobre Nós`) e acesso às `Configurações`.
+   - **Funciona:** Exibe saudação e avatar do usuário no `useStore`, os **4 cartões principais por curso** (**Saúde Mental / Psicologia**, **Sinais Vitais / Enfermagem**, **Lembretes / Farmácia** e **Corpo & Movimento / Ed. Física & Fisioterapia**) padronizados com acessibilidade `RNF01`, além do **cartão das Clínicas-Escola & Serviços da UNC** (`Ver Serviços da UNC`) e acesso às `Configurações`.
    - **Observação:** A tela `Fisioterapia` já existe nas rotas, mas sua unificação por abas dentro de `Corpo & Movimento` está planejada na issue [#21](https://github.com/bonasticos/MeuAppDeSaude/issues/21).
 
 4. **⚙️ Configurações (`src/screens/Configuracoes`)**
-   - **Funciona:** Atualiza nome, telefone e foto de perfil via `expo-image-picker` (com upload automático para o bucket `avatars` no Supabase Storage e sync em `perfis`), recuperação de senha real via modal (`supabase.auth.resetPasswordForEmail`), `signOut` real no Supabase + limpeza do `useStore` ao sair e acesso à tela `SobreUNC`.
+   - **Funciona:** Atualiza nome, telefone e foto de perfil via `expo-image-picker` (com upload automático para o bucket `avatars` no Supabase Storage e sync em `perfis`), recuperação de senha real via modal (`supabase.auth.resetPasswordForEmail`), `signOut` real no Supabase + limpeza do `useStore` ao sair e acesso aos **Serviços da UNC à Comunidade**.
    - **Pendente:** Botão definitivo de exclusão de conta e dados LGPD ([#26](https://github.com/bonasticos/MeuAppDeSaude/issues/26)).
 
 5. **🧠 Saúde Mental — Psicologia & Humor (`src/screens/Humor`)**
@@ -122,8 +122,8 @@ supabase/
    - **Funciona:** Registro diário do nível de dor na escala EVA (`0` a `10`), **gráfico de evolução da dor com classificação de gravidade (`RF46`)** e histórico salvo no `useStore`, já padronizados para alto contraste e acessibilidade (`RNF01`).
    - **⚠️ Mocks / Pendentes:** Os botões "Exercícios de Hoje" e "Lembretes de Postura" ainda estão sem ação ([#8](https://github.com/bonasticos/MeuAppDeSaude/issues/8)), além da seleção de região corporal/tipo de dor ([#9](https://github.com/bonasticos/MeuAppDeSaude/issues/9)).
 
-10. **🎓 Sobre a UNC & Clínicas-Escola (`src/screens/SobreUNC`)**
-    - **Funciona:** Vitrine institucional da **Engenharia de Software da UNC** e das **Clínicas-Escola** dos cursos de **Medicina, Fisioterapia, Odontologia, Psicologia e Enfermagem**, abertura dos detalhes de cada curso em janela/modal sem sair do aplicativo e cálculo de distância/rotas via **GPS (`expo-location`)** para os campi da UNC.
+10. **🎓 Serviços da UNC à Comunidade & Clínicas-Escola (`src/screens/SobreUNC`)**
+    - **Funciona:** Apresenta os serviços prestados à população pelas **Clínicas-Escola** dos cursos de **Medicina, Fisioterapia, Odontologia, Psicologia e Enfermagem** (abertura em modal com abas de *Serviços*, *Agendamento* e *GPS & Campi*), localização e rotas por **GPS (`expo-location`)** para os campi da UNC e nota de apresentação do app como **projeto de curricularização da extensão**.
 
 ---
 

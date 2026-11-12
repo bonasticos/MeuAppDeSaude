@@ -82,9 +82,9 @@
 ---
 
 > [!NOTE]
-> ## 🎓 Extensão Acadêmica & Clínicas-Escola da UNC (Implementado)
+> ## 🎓 Curricularização & Serviços da UNC à Comunidade (Implementado)
 
-- ✅ **SobreUNC:** Módulo institucional do curso de **Engenharia de Software da UNC** integrado à tela `Inicial`, `Login` e `Configuracoes`, com informações detalhadas das **Clínicas-Escola** (**Medicina, Fisioterapia, Odontologia, Psicologia e Enfermagem**) abertas em modais/janelas sem sair do app e **localização via GPS (`expo-location`)** para calcular distância e rotas até os campi da UNC.
+- ✅ **SobreUNC:** Aba acessível via `Inicial`, `Login` e `Configuracoes` dedicada aos **serviços prestados à comunidade** pelos cursos de **Medicina, Fisioterapia, Odontologia, Psicologia e Enfermagem** nas **Clínicas-Escola** e **Espaço Mais Saúde**, com abertura de informações e agendamentos em modal (abas *Serviços*, *Agendamento* e *GPS & Campi*), **localização via GPS (`expo-location`)** para calcular distância/rotas até os campi e registro objetivo do app como **projeto de curricularização da extensão**.
 
 ---
 

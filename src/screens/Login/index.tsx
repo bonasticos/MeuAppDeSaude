@@ -275,8 +275,8 @@ export default function LoginScreen({ navigation }: Props) {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.uncFooter} onPress={() => navigation.navigate('SobreUNC')} activeOpacity={0.8}>
-            <Text style={styles.uncFooterText}>Desenvolvido por Engenharia de Software • UNC</Text>
-            <Text style={styles.uncFooterLink}>Conheça a Universidade e o Projeto →</Text>
+            <Text style={styles.uncFooterText}>Projeto de Curricularização • UNC</Text>
+            <Text style={styles.uncFooterLink}>Serviços das Clínicas-Escola à Comunidade →</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
