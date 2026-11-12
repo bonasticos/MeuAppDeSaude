@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, Modal } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, Modal, Platform } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useStore } from '../../store/useStore';
@@ -11,22 +11,58 @@ interface Props {
   navigation: ProfileScreenNavigationProp;
 }
 
+type IntensidadeTreino = 'Leve' | 'Moderado' | 'Intenso';
+
+const COMORBIDADES_OPCOES = ['Diabetes', 'Hipertensão', 'Problema Cardíaco', 'Nenhuma'];
+const INTENSIDADES: { tipo: IntensidadeTreino; label: string; met: number }[] = [
+  { tipo: 'Leve', label: 'Leve', met: 3.5 },
+  { tipo: 'Moderado', label: 'Moderado', met: 5.5 },
+  { tipo: 'Intenso', label: 'Intenso', met: 8.0 },
+];
+
 export default function ProfileScreen({ navigation }: Props) {
-  const [age, setAge] = useState('');
-  const [weight, setWeight] = useState('');
-  const [height, setHeight] = useState('');
-  const [gender, setGender] = useState<string | null>(null);
-  
+  const { perfil, updatePerfil } = useStore();
+  const frequenciaAtividade = perfil?.frequenciaAtividade || null;
+  const treinos = useStore((state) => state.treinos || []);
+  const addTreino = useStore((state) => state.addTreino);
+
+  const [age, setAge] = useState(perfil?.idade || '');
+  const [weight, setWeight] = useState(perfil?.peso || '');
+  const [height, setHeight] = useState(perfil?.altura || '');
+  const [gender, setGender] = useState<string | null>(perfil?.sexo || null);
+  const [comorbidades, setComorbidades] = useState<string[]>(perfil?.comorbidades || []);
+  const [alergias, setAlergias] = useState(perfil?.alergias || '');
+
   const [imc, setImc] = useState<number | null>(null);
   const [imcClassification, setImcClassification] = useState('');
 
-  // EducacaoFisica states
+  // EducacaoFisica states (RF29, RF31)
   const [desc, setDesc] = useState('');
+  const [duracaoMin, setDuracaoMin] = useState('');
+  const [intensidade, setIntensidade] = useState<IntensidadeTreino>('Moderado');
   const [modalVisible, setModalVisible] = useState(false);
-  const { perfil, updatePerfil } = useStore();
-  const frequenciaAtividade = perfil?.frequenciaAtividade || null;
-  const treinos = useStore((state) => state.treinos);
-  const addTreino = useStore((state) => state.addTreino);
+
+  const hasEditedPerfil = useRef(false);
+
+  // Sincroniza quando o perfil hidrata do armazenamento local
+  useEffect(() => {
+    if (perfil && !hasEditedPerfil.current) {
+      if (perfil.idade !== undefined && perfil.idade !== '') setAge(perfil.idade);
+      if (perfil.peso !== undefined && perfil.peso !== '') setWeight(perfil.peso);
+      if (perfil.altura !== undefined && perfil.altura !== '') setHeight(perfil.altura);
+      if (perfil.sexo !== undefined) setGender(perfil.sexo);
+      if (perfil.comorbidades !== undefined) setComorbidades(perfil.comorbidades);
+      if (perfil.alergias !== undefined) setAlergias(perfil.alergias);
+    }
+  }, [perfil]);
+
+  const mostrarAlerta = (titulo: string, mensagem: string) => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.alert(`${titulo}\n\n${mensagem}`);
+    } else {
+      Alert.alert(titulo, mensagem);
+    }
+  };
 
   const genders = ['Masculino', 'Feminino', 'Outro'];
   const activities = [
@@ -66,43 +102,125 @@ export default function ProfileScreen({ navigation }: Props) {
     }
   }, [weight, height]);
 
-  const handleSaveProfile = () => {
-    if (!age || !weight || !height || !gender) {
-      Alert.alert('Atenção', 'Preencha todos os campos do perfil (Idade, Peso, Altura, Sexo).');
-      return;
+  const toggleComorbidade = (item: string) => {
+    hasEditedPerfil.current = true;
+    let next: string[];
+    if (item === 'Nenhuma') {
+      next = comorbidades.includes('Nenhuma') ? [] : ['Nenhuma'];
+    } else {
+      const semNenhuma = comorbidades.filter((c) => c !== 'Nenhuma');
+      next = semNenhuma.includes(item)
+        ? semNenhuma.filter((c) => c !== item)
+        : [...semNenhuma, item];
     }
-    Alert.alert('Sucesso', 'Perfil salvo com sucesso!', [
-      { text: 'OK' }
-    ]);
+    setComorbidades(next);
+    updatePerfil({ comorbidades: next });
   };
 
-  const handleRegistrarTreino = () => {
-    if (!desc) {
-      Alert.alert('Erro', 'Por favor, descreva o treino que você realizou.');
+  const handleSaveProfile = () => {
+    const temAlgumDado =
+      Boolean(age.trim()) ||
+      Boolean(weight.trim()) ||
+      Boolean(height.trim()) ||
+      Boolean(gender) ||
+      comorbidades.length > 0 ||
+      Boolean(alergias.trim());
+
+    if (!temAlgumDado) {
+      mostrarAlerta('Atenção', 'Preencha ao menos um dado corporal, comorbidade ou alergia para salvar.');
       return;
     }
-    addTreino({ descricao: desc });
-    Alert.alert('Sucesso', 'Treino registrado! Continue assim!');
+
+    hasEditedPerfil.current = true;
+    updatePerfil({
+      idade: age.trim(),
+      peso: weight.trim(),
+      altura: height.trim(),
+      sexo: gender || undefined,
+      imc: imc ?? undefined,
+      comorbidades,
+      alergias: alergias.trim(),
+    });
+
+    const dadosCorporaisFaltantes = !age.trim() || !weight.trim() || !height.trim() || !gender;
+    mostrarAlerta(
+      'Sucesso',
+      dadosCorporaisFaltantes
+        ? 'Dados de saúde salvos! Preencha Idade, Peso, Altura e Sexo quando quiser calcular seu IMC completo.'
+        : 'Perfil corporal e dados de saúde salvos com sucesso!'
+    );
+  };
+
+  // Cálculo automático da Meta Diária de Água: 35ml × peso corporal (RF13)
+  const pesoNumerico = parseFloat((weight || perfil?.peso || '').replace(',', '.'));
+  const hasValidPeso = !isNaN(pesoNumerico) && pesoNumerico > 0;
+  const metaAguaMl = hasValidPeso ? Math.round(pesoNumerico * 35) : null;
+  const metaAguaLitros = metaAguaMl !== null ? (metaAguaMl / 1000).toFixed(2).replace('.', ',') : null;
+  const copos250ml = metaAguaMl !== null ? Math.ceil(metaAguaMl / 250) : null;
+
+  // Cálculo de Gasto Calórico (RF29, RF31)
+  const duracaoNum = parseInt(duracaoMin.replace(/[^\d]/g, ''), 10);
+  const hasValidDuracao = !isNaN(duracaoNum) && duracaoNum > 0;
+  const pesoParaTreino = hasValidPeso ? pesoNumerico : 70;
+  const metSelecionado = INTENSIDADES.find((i) => i.tipo === intensidade)?.met ?? 5.5;
+  const caloriasEstimadas = hasValidDuracao
+    ? Math.round(metSelecionado * pesoParaTreino * (duracaoNum / 60))
+    : null;
+
+  const handleRegistrarTreino = () => {
+    if (!desc.trim()) {
+      mostrarAlerta('Atenção', 'Por favor, descreva o treino que você realizou.');
+      return;
+    }
+    if (!hasValidDuracao) {
+      mostrarAlerta('Atenção', 'Informe a duração do treino em minutos (ex: 30) para calcular o gasto calórico.');
+      return;
+    }
+
+    const kcal = caloriasEstimadas ?? 0;
+    addTreino({
+      descricao: desc.trim(),
+      duracaoMinutos: duracaoNum,
+      intensidade,
+      caloriasEstimadas: kcal,
+    });
+    mostrarAlerta(
+      'Treino Registrado! 🔥',
+      `${desc.trim()} (${duracaoNum} min • ${intensidade})\nGasto estimado: ~${kcal} kcal.`
+    );
     setDesc('');
+    setDuracaoMin('');
   };
 
   const treinosNaSemana = treinos.length % 6; // Mock para barra de progresso
+  const alertaAlergiaTexto = alergias.trim() || (perfil?.alergias || '').trim();
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>IMC & Educação Física</Text>
-        <Text style={styles.subtitle}>Calcule seu IMC e acompanhe seus treinos físicos em um só lugar.</Text>
+        <Text style={styles.subtitle}>Calcule seu IMC, informe dados clínicos e acompanhe seus treinos físicos.</Text>
+
+        {/* Destaque visual obrigatório para alergias registradas (RF28) */}
+        {alertaAlergiaTexto.length > 0 && (
+          <View style={styles.allergyBanner}>
+            <Text style={styles.allergyBannerTitle}>⚠️ ALERTA CLÍNICO — ALERGIAS REGISTRADAS</Text>
+            <Text style={styles.allergyBannerText}>{alertaAlergiaTexto}</Text>
+          </View>
+        )}
 
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Calculadora de IMC</Text>
+          <Text style={styles.sectionTitle}>Perfil Corporal e Clínico</Text>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Idade</Text>
             <TextInput placeholderTextColor="#999"
               style={styles.input}
               placeholder="Sua idade"
               value={age}
-              onChangeText={setAge}
+              onChangeText={(text) => {
+                hasEditedPerfil.current = true;
+                setAge(text);
+              }}
               keyboardType="numeric"
             />
           </View>
@@ -114,8 +232,11 @@ export default function ProfileScreen({ navigation }: Props) {
                 style={styles.input}
                 placeholder="Ex: 70.5"
                 value={weight}
-                onChangeText={setWeight}
-                keyboardType="numeric"
+                onChangeText={(text) => {
+                  hasEditedPerfil.current = true;
+                  setWeight(text);
+                }}
+                keyboardType="decimal-pad"
               />
             </View>
             <View style={[styles.formGroup, { flex: 1, marginLeft: 10 }]}>
@@ -124,7 +245,10 @@ export default function ProfileScreen({ navigation }: Props) {
                 style={styles.input}
                 placeholder="Ex: 175"
                 value={height}
-                onChangeText={setHeight}
+                onChangeText={(text) => {
+                  hasEditedPerfil.current = true;
+                  setHeight(text);
+                }}
                 keyboardType="numeric"
               />
             </View>
@@ -136,7 +260,10 @@ export default function ProfileScreen({ navigation }: Props) {
               <TouchableOpacity
                 key={g}
                 style={[styles.genderButton, gender === g && styles.selectedGender]}
-                onPress={() => setGender(g)}
+                onPress={() => {
+                  hasEditedPerfil.current = true;
+                  setGender(g);
+                }}
               >
                 <Text style={[styles.genderText, gender === g && styles.selectedGenderText]}>{g}</Text>
               </TouchableOpacity>
@@ -150,9 +277,83 @@ export default function ProfileScreen({ navigation }: Props) {
             </View>
           )}
 
+          {/* Comorbidades (RF05) */}
+          <Text style={styles.label}>Comorbidades / Condições Pré-existentes</Text>
+          <View style={styles.chipsWrap}>
+            {COMORBIDADES_OPCOES.map((condicao) => {
+              const selected = comorbidades.includes(condicao);
+              const isNone = condicao === 'Nenhuma';
+              return (
+                <TouchableOpacity
+                  key={condicao}
+                  style={[
+                    styles.conditionChip,
+                    selected && (isNone ? styles.conditionChipNoneSelected : styles.conditionChipSelected),
+                  ]}
+                  onPress={() => toggleComorbidade(condicao)}
+                  activeOpacity={0.75}
+                >
+                  <Text
+                    style={[
+                      styles.conditionChipText,
+                      selected && (isNone ? styles.conditionChipNoneTextSelected : styles.conditionChipTextSelected),
+                    ]}
+                  >
+                    {selected ? '✓ ' : ''}{condicao}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Alergias (RF28) */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Alergias (medicamentos, alimentos ou outras)</Text>
+            <TextInput
+              placeholderTextColor="#999"
+              style={[styles.input, alergias.trim().length > 0 && styles.allergyInputActive]}
+              placeholder="Ex: Dipirona, Penicilina, Frutos do mar, Látex"
+              value={alergias}
+              onChangeText={(text) => {
+                hasEditedPerfil.current = true;
+                setAlergias(text);
+              }}
+              multiline
+            />
+            {alergias.trim().length > 0 && (
+              <Text style={styles.allergyHintText}>
+                ⚠️ Alergias ficam destacadas no topo do seu perfil para segurança em atendimentos.
+              </Text>
+            )}
+          </View>
+
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#0056b3' }]} onPress={handleSaveProfile}>
-            <Text style={styles.actionButtonText}>Salvar Dados Corporais</Text>
+            <Text style={styles.actionButtonText}>Salvar Dados Corporais e de Saúde</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Card Meta Diária de Água (RF13) */}
+        <View style={styles.waterCard}>
+          <View style={styles.waterHeaderRow}>
+            <Text style={styles.waterTitle}>💧 Meta Diária de Água (RF13)</Text>
+          </View>
+          {metaAguaMl !== null ? (
+            <>
+              <Text style={styles.waterValue}>
+                {metaAguaMl} ml ({metaAguaLitros} L)
+              </Text>
+              <Text style={styles.waterSubtext}>
+                Aproximadamente {copos250ml} copos de 250 ml por dia (cálculo padrão: 35 ml × {pesoNumerico} kg).
+                {frequenciaAtividade === 'Ativo (Pratico Exercícios)'
+                  ? '\n💡 Por ser fisicamente ativo(a), lembre-se de repor líquidos extras durante e após os treinos.'
+                  : ''}
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.waterSubtext}>
+              Informe seu peso corporal (kg) no cartão acima para calcular automaticamente sua meta diária recomendada (35 ml × peso).
+            </Text>
+          )}
         </View>
 
         <View style={styles.card}>
@@ -186,13 +387,59 @@ export default function ProfileScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Registrar Treino</Text>
-          <TextInput placeholderTextColor="#999" 
-            style={styles.input} 
-            placeholder="Ex: Caminhada 30 min" 
-            value={desc} 
-            onChangeText={setDesc} 
-          />
+          <Text style={styles.sectionTitle}>Registrar Treino (RF29 & RF31)</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Atividade realizada</Text>
+            <TextInput placeholderTextColor="#999"
+              style={styles.input}
+              placeholder="Ex: Caminhada no parque, Musculação"
+              value={desc}
+              onChangeText={setDesc}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Duração (minutos)</Text>
+            <TextInput placeholderTextColor="#999"
+              style={styles.input}
+              placeholder="Ex: 45"
+              value={duracaoMin}
+              onChangeText={(text) => setDuracaoMin(text.replace(/[^\d]/g, ''))}
+              keyboardType="numeric"
+              maxLength={4}
+            />
+          </View>
+
+          <Text style={styles.label}>Intensidade</Text>
+          <View style={styles.intensityRow}>
+            {INTENSIDADES.map((item) => {
+              const selected = intensidade === item.tipo;
+              return (
+                <TouchableOpacity
+                  key={item.tipo}
+                  style={[styles.intensityBtn, selected && styles.intensityBtnSelected]}
+                  onPress={() => setIntensidade(item.tipo)}
+                  activeOpacity={0.75}
+                >
+                  <Text style={[styles.intensityBtnText, selected && styles.intensityBtnTextSelected]}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {caloriasEstimadas !== null && (
+            <View style={styles.caloriePreviewBox}>
+              <Text style={styles.caloriePreviewTitle}>
+                🔥 Gasto calórico estimado: ~{caloriasEstimadas} kcal
+              </Text>
+              <Text style={styles.caloriePreviewSub}>
+                Baseado em {duracaoNum} min de intensidade {intensidade.toLowerCase()} ({pesoParaTreino} kg{!hasValidPeso ? ' padrão' : ''}).
+              </Text>
+            </View>
+          )}
+
           <TouchableOpacity style={styles.actionButton} onPress={handleRegistrarTreino}>
             <Text style={styles.actionButtonText}>+ Salvar Treino</Text>
           </TouchableOpacity>
@@ -201,12 +448,26 @@ export default function ProfileScreen({ navigation }: Props) {
         <View style={styles.historyContainer}>
           <Text style={styles.historyTitle}>Últimos Treinos</Text>
           {treinos.length === 0 ? (
-            <Text style={{color: '#666'}}>Você ainda não registrou treinos.</Text>
+            <Text style={{ color: '#666' }}>Você ainda não registrou treinos.</Text>
           ) : (
-            treinos.slice().reverse().slice(0, 5).map((t) => (
-              <Text key={t.id} style={{color: '#333', marginBottom: 4, fontSize: 16}}>
-                {new Date(t.data).toLocaleDateString('pt-BR')}: {t.descricao}
-              </Text>
+            treinos.slice().reverse().slice(0, 8).map((t) => (
+              <View key={t.id} style={styles.workoutHistoryCard}>
+                <Text style={styles.workoutHistoryTitle}>
+                  {new Date(t.data).toLocaleDateString('pt-BR')} — {t.descricao}
+                </Text>
+                {(t.duracaoMinutos || t.intensidade) && (
+                  <Text style={styles.workoutHistoryMeta}>
+                    {t.duracaoMinutos ? `⏱️ ${t.duracaoMinutos} min` : ''}
+                    {t.duracaoMinutos && t.intensidade ? '  •  ' : ''}
+                    {t.intensidade ? `Intensidade: ${t.intensidade}` : ''}
+                  </Text>
+                )}
+                {t.caloriasEstimadas !== undefined && t.caloriasEstimadas > 0 && (
+                  <View style={styles.workoutKcalBadge}>
+                    <Text style={styles.workoutKcalBadgeText}>🔥 ~{t.caloriasEstimadas} kcal gastas</Text>
+                  </View>
+                )}
+              </View>
             ))
           )}
         </View>

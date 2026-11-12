@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, FlatList, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, FlatList, Platform, Modal } from 'react-native';
 import { useStore } from '../../store/useStore';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { SinalVital } from '../../types';
 import { styles } from './styles';
 import * as Notifications from 'expo-notifications';
 
@@ -25,6 +26,23 @@ interface Props {
 
 const BASIC_MOODS = ['Bem', 'Neutro', 'Mal'];
 const GLICOSE_TIPOS = ['Jejum', 'Pré-prandial', 'Pós-prandial'] as const;
+
+const CHECKLIST_CUIDADOS_ITENS = [
+  { id: 'higiene_bucal', titulo: 'Higiene bucal e corporal', desc: 'Escovação dentária, banho assistido e limpeza da pele.' },
+  { id: 'hidratacao', titulo: 'Hidratação e cuidado com a pele', desc: 'Ingestão adequada de água e hidratação cutânea.' },
+  { id: 'decubito', titulo: 'Mudança de posição (decúbito)', desc: 'Alternar posição a cada 2h para prevenção de lesões por pressão.' },
+  { id: 'inspecao_pele', titulo: 'Inspeção de pontos de pressão', desc: 'Checar calcanhares, região sacral, cotovelos e curativos.' },
+  { id: 'medicacao', titulo: 'Medicações do turno conferidas', desc: 'Conferir horários, doses prescritas e aceitação.' },
+  { id: 'ambiente', titulo: 'Ambiente ventilado e seguro', desc: 'Leito organizado, boa ventilação e prevenção de quedas.' },
+];
+
+const getHojeLocalKey = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
 
 interface VitalLimit {
   min: number;
@@ -216,13 +234,42 @@ export default function TelaSinaisVitais({ navigation }: Props) {
   const [pressaoSistolica, setPressaoSistolica] = useState('');
   const [pressaoDiastolica, setPressaoDiastolica] = useState('');
   const [oxigenacao, setOxigenacao] = useState('');
+  const [temperatura, setTemperatura] = useState('');
   const [humor, setHumor] = useState<string | null>(null);
   const [exercicio, setExercicio] = useState<boolean | null>(null);
-  
+
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [checklistModalVisible, setChecklistModalVisible] = useState(false);
+
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const addSinalVital = useStore((state) => state.addSinalVital);
-  const historico = useStore((state) => state.sinaisVitais);
+  const updateSinalVital = useStore((state) => state.updateSinalVital);
+  const removeSinalVital = useStore((state) => state.removeSinalVital);
+  const historico = useStore((state) => state.sinaisVitais || []);
+  const checklistCuidados = useStore((state) => state.checklistCuidados);
+  const setChecklistCuidados = useStore((state) => state.setChecklistCuidados);
+
+  const hojeKey = getHojeLocalKey();
+  const itensChecklistHoje =
+    checklistCuidados?.data === hojeKey ? checklistCuidados.itensConcluidos || [] : [];
+
+  const toggleChecklistItem = (id: string) => {
+    const exists = itensChecklistHoje.includes(id);
+    const next = exists
+      ? itensChecklistHoje.filter((item) => item !== id)
+      : [...itensChecklistHoje, id];
+    setChecklistCuidados({ data: hojeKey, itensConcluidos: next });
+  };
+
+  const mostrarAlerta = (titulo: string, mensagem: string) => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.alert(`${titulo}\n\n${mensagem}`);
+    } else {
+      Alert.alert(titulo, mensagem);
+    }
+  };
 
   const lastNotificationTime = useRef<Record<string, number>>({});
 
@@ -356,6 +403,104 @@ export default function TelaSinaisVitais({ navigation }: Props) {
     return () => clearTimeout(delayDebounce);
   }, [oxigenacao]);
 
+  useEffect(() => {
+    if (!temperatura || temperatura.endsWith('.')) return;
+    const delayDebounce = setTimeout(() => {
+      const val = parseFloat(temperatura.replace(',', '.'));
+      if (!isNaN(val) && val >= 25 && val <= 43) {
+        if (val > 37.8) {
+          triggerInstantNotification(
+            "🌡️ Alerta: Febre Detectada",
+            `Temperatura corporal em ${val.toFixed(1)} °C (> 37.8 °C). Monitore hidratação e procure avaliação médica se persistir.`
+          );
+        } else if (val < 35.0) {
+          triggerInstantNotification(
+            "🌡️ Alerta: Hipotermia Detectada",
+            `Temperatura corporal em ${val.toFixed(1)} °C (< 35.0 °C). Aqueça o corpo e procure atendimento de saúde.`
+          );
+        }
+      }
+    }, 1200);
+    return () => clearTimeout(delayDebounce);
+  }, [temperatura]);
+
+  const handleTempChange = (text: string) => {
+    const normalized = text.replace(',', '.').replace(/[^\d.]/g, '');
+    const parts = normalized.split('.');
+    let formatted = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : normalized;
+    if (parts.length === 2 && parts[1].length > 1) {
+      formatted = `${parts[0]}.${parts[1].slice(0, 1)}`;
+    }
+    const parsed = parseFloat(formatted);
+    if (!isNaN(parsed) && parsed > 43) {
+      formatted = '43.0';
+    }
+    setTemperatura(formatted);
+  };
+
+  const resetForm = () => {
+    setBpm('');
+    setGlucose('');
+    setGlicoseTipo(null);
+    setPressaoSistolica('');
+    setPressaoDiastolica('');
+    setOxigenacao('');
+    setTemperatura('');
+    setHumor(null);
+    setExercicio(null);
+    setFocusedInput(null);
+    setEditingId(null);
+  };
+
+  const handleStartEdit = (registro: SinalVital) => {
+    setEditingId(registro.id);
+    setBpm(registro.bpm || '');
+    setGlucose(registro.glicose || '');
+    setGlicoseTipo(registro.glicoseTipo || null);
+
+    if (registro.pressao && registro.pressao.includes('/')) {
+      const [sys, dia] = registro.pressao.split('/');
+      setPressaoSistolica((sys || '').trim());
+      setPressaoDiastolica((dia || '').trim());
+    } else {
+      setPressaoSistolica('');
+      setPressaoDiastolica('');
+    }
+
+    setOxigenacao(registro.oxigenacao || '');
+    setTemperatura(registro.temperatura || '');
+    setHumor(registro.humor || null);
+    setExercicio(registro.exercicio !== undefined ? registro.exercicio : null);
+    setFocusedInput(null);
+
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
+  const handleDeleteRecord = (id: string) => {
+    const executarExclusao = () => {
+      removeSinalVital(id);
+      if (editingId === id) {
+        resetForm();
+      }
+    };
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      if (window.confirm('Excluir registro\n\nDeseja realmente remover esta medição dos últimos registros?')) {
+        executarExclusao();
+      }
+      return;
+    }
+
+    Alert.alert(
+      'Excluir registro',
+      'Deseja realmente remover esta medição dos últimos registros?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Excluir', style: 'destructive', onPress: executarExclusao },
+      ]
+    );
+  };
+
   const handleInputChange = (text: string, field: keyof typeof VITALS_CONFIG) => {
     const config = VITALS_CONFIG[field];
     const cleaned = text.replace(/[^\d]/g, '');
@@ -407,7 +552,8 @@ export default function TelaSinaisVitais({ navigation }: Props) {
     glucoseTypeVal: string | null,
     sysVal: number,
     diaVal: number,
-    oxVal: number
+    oxVal: number,
+    tempVal: number
   ): Promise<boolean> => {
     const alerts: string[] = [];
 
@@ -448,6 +594,14 @@ export default function TelaSinaisVitais({ navigation }: Props) {
       alerts.push(`🫁 Saturação de Oxigênio: ${oxVal}% (saudável >= ${VITALS_CONFIG.oxigenacao.healthyMin}%)`);
     }
 
+    if (!isNaN(tempVal)) {
+      if (tempVal > 37.8) {
+        alerts.push(`🌡️ Temperatura Corporal: ${tempVal.toFixed(1)} °C — Atenção: Febre (> 37.8 °C)`);
+      } else if (tempVal < 35.0) {
+        alerts.push(`🌡️ Temperatura Corporal: ${tempVal.toFixed(1)} °C — Atenção: Hipotermia (< 35.0 °C)`);
+      }
+    }
+
     if (alerts.length > 0) {
       // Dispara notificação nativa final de resumo
       try {
@@ -464,10 +618,9 @@ export default function TelaSinaisVitais({ navigation }: Props) {
       }
 
       // Alerta visual no app
-      Alert.alert(
+      mostrarAlerta(
         '🚨 Alerta de Saúde',
-        'Os seguintes sinais vitais registrados requerem atenção:\n\n' + alerts.map(a => '• ' + a).join('\n\n') + '\n\nRecomendamos que repouse e consulte um médico se os sintomas persistirem.',
-        [{ text: 'Entendido', style: 'default' }]
+        'Os seguintes sinais vitais registrados requerem atenção:\n\n' + alerts.map(a => '• ' + a).join('\n\n') + '\n\nRecomendamos que repouse e consulte um médico se os sintomas persistirem.'
       );
       return true;
     }
@@ -477,72 +630,87 @@ export default function TelaSinaisVitais({ navigation }: Props) {
   const hasGlucose = glucose.length > 0;
   const isGlucoseValid = !hasGlucose || (hasGlucose && glicoseTipo !== null);
   const isPressaoValid = (pressaoSistolica.length > 0 && pressaoDiastolica.length > 0) || (pressaoSistolica.length === 0 && pressaoDiastolica.length === 0);
-  const hasAnyVital = bpm.length > 0 || hasGlucose || (pressaoSistolica.length > 0 && pressaoDiastolica.length > 0) || oxigenacao.length > 0 || humor !== null || exercicio !== null;
+  const tempClean = temperatura.replace(',', '.').trim();
+  const tempParsed = tempClean ? parseFloat(tempClean) : NaN;
+  const isTempValid = !tempClean || (!isNaN(tempParsed) && tempParsed >= 30 && tempParsed <= 43 && !tempClean.endsWith('.'));
+  const hasAnyVital = bpm.length > 0 || hasGlucose || (pressaoSistolica.length > 0 && pressaoDiastolica.length > 0) || oxigenacao.length > 0 || tempClean.length > 0 || humor !== null || exercicio !== null;
 
-  const isFormValid = hasAnyVital && isGlucoseValid && isPressaoValid;
+  const isFormValid = hasAnyVital && isGlucoseValid && isPressaoValid && isTempValid;
 
   const handleSave = () => {
     try {
       if (!isFormValid) {
         if (!isGlucoseValid) {
-          Alert.alert('Ops!', 'Como a glicose foi preenchida, o tipo de medição (Jejum, Pré-prandial ou Pós-prandial) é obrigatório.');
+          mostrarAlerta('Ops!', 'Como a glicose foi preenchida, o tipo de medição (Jejum, Pré-prandial ou Pós-prandial) é obrigatório.');
         } else if (!isPressaoValid) {
-          Alert.alert('Ops!', 'Para registrar a pressão arterial, preencha tanto a Sistólica quanto a Diastólica.');
+          mostrarAlerta('Ops!', 'Para registrar a pressão arterial, preencha tanto a Sistólica quanto a Diastólica.');
+        } else if (!isTempValid) {
+          mostrarAlerta('Ops!', 'Informe uma temperatura corporal válida entre 30.0 °C e 43.0 °C.');
         } else {
-          Alert.alert('Atenção', 'Por favor, preencha pelo menos um sinal vital ou informação para registrar.');
+          mostrarAlerta('Atenção', 'Por favor, preencha pelo menos um sinal vital ou informação para registrar.');
         }
         return;
       }
-      
+
       const bpmNum = parseInt(bpm, 10);
       const glucoseNum = parseInt(glucose, 10);
       const sysNum = parseInt(pressaoSistolica, 10);
       const diaNum = parseInt(pressaoDiastolica, 10);
       const oxNum = parseInt(oxigenacao, 10);
+      const tempNum = tempClean ? parseFloat(tempClean) : NaN;
 
       const pressaoConsolidada = (pressaoSistolica && pressaoDiastolica) ? `${pressaoSistolica}/${pressaoDiastolica}` : undefined;
-
-      addSinalVital({ 
-        bpm, 
-        glicose: glucose, 
+      const payload = {
+        bpm,
+        glicose: glucose,
         glicoseTipo: glicoseTipo || undefined,
         pressao: pressaoConsolidada,
         oxigenacao,
+        temperatura: tempClean ? tempNum.toFixed(1) : undefined,
         humor: humor !== null ? humor : undefined,
-        exercicio: exercicio !== null ? exercicio : undefined
-      });
-      
+        exercicio: exercicio !== null ? exercicio : undefined,
+      };
+
+      const estavaEditando = editingId !== null;
+      if (editingId) {
+        updateSinalVital(editingId, payload);
+      } else {
+        addSinalVital(payload);
+      }
+
+      const msgSucesso = estavaEditando
+        ? 'Registro de sinais vitais atualizado com sucesso. ✏️'
+        : 'Seus sinais vitais foram registrados com sucesso. 🩺';
+
       // Validação final de salvamento
-      checkVitalsAndNotifyOnSave(bpmNum, glucoseNum, glicoseTipo, sysNum, diaNum, oxNum)
+      checkVitalsAndNotifyOnSave(bpmNum, glucoseNum, glicoseTipo, sysNum, diaNum, oxNum, tempNum)
         .then((hadAlerts) => {
           if (!hadAlerts) {
-            Alert.alert('Excelente!', 'Seus sinais vitais foram registrados com sucesso. 🩺');
+            mostrarAlerta('Excelente!', msgSucesso);
           }
         })
         .catch((err) => {
           console.log('Erro ao analisar alertas:', err);
-          Alert.alert('Excelente!', 'Seus sinais vitais foram registrados com sucesso. 🩺');
+          mostrarAlerta('Excelente!', msgSucesso);
         });
 
-      setBpm('');
-      setGlucose('');
-      setGlicoseTipo(null);
-      setPressaoSistolica('');
-      setPressaoDiastolica('');
-      setOxigenacao('');
-      setHumor(null);
-      setExercicio(null);
-      setFocusedInput(null);
+      resetForm();
     } catch (e: any) {
       console.log('Erro no salvamento:', e);
-      Alert.alert('Erro', 'Ocorreu um erro inesperado ao salvar: ' + e.message);
+      mostrarAlerta('Erro', 'Ocorreu um erro inesperado ao salvar: ' + e.message);
     }
   };
 
+  const hasValidTempPreview =
+    tempClean.length >= 2 && !tempClean.endsWith('.') && !isNaN(tempParsed) && tempParsed >= 25 && tempParsed <= 43;
+  const isFebre = hasValidTempPreview && tempParsed > 37.8;
+  const isHipotermia = hasValidTempPreview && tempParsed < 35.0;
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        contentContainerStyle={styles.scroll} 
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -550,6 +718,17 @@ export default function TelaSinaisVitais({ navigation }: Props) {
           <Text style={styles.title}>Sinais Vitais (Enfermagem)</Text>
           <Text style={styles.subtitle}>Acompanhe seus indicadores físicos e de enfermagem para controle diário</Text>
         </View>
+
+        {editingId && (
+          <View style={styles.editingBanner}>
+            <Text style={styles.editingBannerText}>
+              ✏️ Editando uma medição existente. Ajuste os campos e toque em Salvar Alterações.
+            </Text>
+            <TouchableOpacity style={styles.editingCancelBtn} onPress={resetForm}>
+              <Text style={styles.editingCancelText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <View style={styles.card}>
           {/* Batimentos Cardiacos */}
@@ -730,6 +909,50 @@ export default function TelaSinaisVitais({ navigation }: Props) {
             )}
           </View>
 
+          {/* Temperatura Corporal (RF22) */}
+          <View style={styles.formGroup}>
+            <View style={styles.labelContainer}>
+              <View style={[styles.iconContainer, { backgroundColor: '#FEF3C7' }]}>
+                <Text>🌡️</Text>
+              </View>
+              <Text style={styles.label}>
+                Temperatura Corporal {hasValidTempPreview ? `(${tempParsed.toFixed(1)} °C)` : ''}
+              </Text>
+            </View>
+            <TextInput
+              placeholderTextColor="#A0A0AB"
+              style={[styles.input, focusedInput === 'temperatura' && styles.inputFocused]}
+              placeholder="Ex: 36.5"
+              keyboardType="decimal-pad"
+              value={temperatura}
+              onChangeText={handleTempChange}
+              onFocus={() => setFocusedInput('temperatura')}
+              onBlur={() => setFocusedInput(null)}
+              maxLength={4}
+            />
+            {isFebre && (
+              <View style={[styles.tempAlertBox, styles.tempAlertFever]}>
+                <Text style={styles.tempAlertTextFever}>
+                  ⚠️ Alerta de Febre ({tempParsed.toFixed(1)} °C &gt; 37.8 °C). Hidrate-se e procure orientação de saúde se persistir.
+                </Text>
+              </View>
+            )}
+            {isHipotermia && (
+              <View style={[styles.tempAlertBox, styles.tempAlertHypo]}>
+                <Text style={styles.tempAlertTextHypo}>
+                  ❄️ Alerta de Hipotermia ({tempParsed.toFixed(1)} °C &lt; 35.0 °C). Mantenha-se aquecido(a) e procure avaliação clínica.
+                </Text>
+              </View>
+            )}
+            {hasValidTempPreview && !isFebre && !isHipotermia && (
+              <View style={[styles.tempAlertBox, styles.tempAlertNormal]}>
+                <Text style={styles.tempAlertTextNormal}>
+                  ✅ Temperatura dentro da faixa esperada (35.0 – 37.8 °C).
+                </Text>
+              </View>
+            )}
+          </View>
+
           {/* Mood */}
           <Text style={styles.sectionTitle}>Como você se sente hoje?</Text>
           <View style={styles.chipContainer}>
@@ -772,27 +995,77 @@ export default function TelaSinaisVitais({ navigation }: Props) {
           </View>
         </View>
 
-        <TouchableOpacity 
-          style={styles.saveButton} 
+        <TouchableOpacity
+          style={[styles.saveButton, editingId !== null && { backgroundColor: '#D97706' }]}
           onPress={handleSave}
           activeOpacity={0.8}
         >
           <Text style={styles.saveButtonText}>
-            Registrar Sinais Vitais
+            {editingId ? 'Salvar Alterações' : 'Registrar Sinais Vitais'}
           </Text>
         </TouchableOpacity>
+
+        {/* Checklist Diário de Cuidados Básicos e Higiene (RF27) */}
+        <View style={styles.checklistCard}>
+          <View style={styles.checklistHeader}>
+            <Text style={styles.checklistTitle}>🧴 Checklist Diário de Cuidados (RF27)</Text>
+            <View
+              style={[
+                styles.checklistBadge,
+                itensChecklistHoje.length === CHECKLIST_CUIDADOS_ITENS.length && styles.checklistBadgeDone,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.checklistBadgeText,
+                  itensChecklistHoje.length === CHECKLIST_CUIDADOS_ITENS.length && styles.checklistBadgeTextDone,
+                ]}
+              >
+                {itensChecklistHoje.length}/{CHECKLIST_CUIDADOS_ITENS.length} hoje
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.checklistSubtitle}>
+            Acompanhe os cuidados básicos de enfermagem, higiene, hidratação e prevenção de lesões no dia de hoje.
+          </Text>
+
+          <View style={styles.checklistProgressTrack}>
+            <View
+              style={[
+                styles.checklistProgressFill,
+                { width: `${(itensChecklistHoje.length / CHECKLIST_CUIDADOS_ITENS.length) * 100}%` },
+              ]}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={styles.checklistOpenBtn}
+            onPress={() => setChecklistModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.checklistOpenBtnText}>Abrir Checklist de Cuidados</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* History */}
         <View style={styles.historyContainer}>
           <Text style={styles.historyTitle}>Últimos Registros</Text>
-          
+
           {historico.length === 0 ? (
             <Text style={styles.emptyHistory}>Você ainda não tem registros.</Text>
           ) : (
-            historico.slice().reverse().slice(0, 5).map((h) => {
+            historico.slice().reverse().slice(0, 10).map((h) => {
               const dateObj = new Date(h.data);
+              const isBeingEdited = editingId === h.id;
               return (
-                <View key={h.id} style={styles.historyCard}>
+                <View
+                  key={h.id}
+                  style={[
+                    styles.historyCard,
+                    isBeingEdited && { borderWidth: 1.5, borderColor: '#F59E0B', backgroundColor: '#FFFBEB' },
+                  ]}
+                >
                   <View style={styles.historyDateContainer}>
                     <Text style={styles.historyTime}>
                       {dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
@@ -801,7 +1074,7 @@ export default function TelaSinaisVitais({ navigation }: Props) {
                       {dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                     </Text>
                   </View>
-                  
+
                   <View style={styles.historyContent}>
                     {h.bpm ? (
                       <View style={styles.historyRow}>
@@ -829,15 +1102,38 @@ export default function TelaSinaisVitais({ navigation }: Props) {
                         <Text style={styles.historyValue}>{h.oxigenacao}% SpO2</Text>
                       </View>
                     ) : null}
+                    {h.temperatura ? (
+                      <View style={styles.historyRow}>
+                        <Text>🌡️</Text>
+                        <Text style={styles.historyValue}>{h.temperatura} °C</Text>
+                      </View>
+                    ) : null}
                     {(h.humor || h.exercicio !== undefined) && (
                       <View style={[styles.historyRow, { marginTop: 4, flexWrap: 'wrap' }]}>
-                        {h.humor && <Text style={{fontSize: 13, color: '#666', marginRight: 8}}>Humor: {h.humor}</Text>}
-                        {h.exercicio !== undefined && <Text style={{fontSize: 13, color: '#666'}}>Exercício: {h.exercicio ? 'Sim' : 'Não'}</Text>}
+                        {h.humor && <Text style={{ fontSize: 13, color: '#666', marginRight: 8 }}>Humor: {h.humor}</Text>}
+                        {h.exercicio !== undefined && <Text style={{ fontSize: 13, color: '#666' }}>Exercício: {h.exercicio ? 'Sim' : 'Não'}</Text>}
                       </View>
                     )}
+
+                    <View style={styles.historyActionsRow}>
+                      <TouchableOpacity
+                        style={styles.historyEditBtn}
+                        onPress={() => handleStartEdit(h)}
+                        activeOpacity={0.75}
+                      >
+                        <Text style={styles.historyEditBtnText}>✏️ Editar</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.historyDeleteBtn}
+                        onPress={() => handleDeleteRecord(h.id)}
+                        activeOpacity={0.75}
+                      >
+                        <Text style={styles.historyDeleteBtnText}>🗑️ Excluir</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
-              )
+              );
             })
           )}
         </View>
@@ -846,6 +1142,64 @@ export default function TelaSinaisVitais({ navigation }: Props) {
           <Text style={styles.backButtonText}>Voltar ao Início</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Modal Checklist Diário de Cuidados (RF27) */}
+      <Modal
+        visible={checklistModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setChecklistModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Checklist de Cuidados ({itensChecklistHoje.length}/{CHECKLIST_CUIDADOS_ITENS.length})</Text>
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={() => setChecklistModalVisible(false)}
+              >
+                <Text style={styles.modalCloseText}>Fechar</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalSubtitle}>
+              Marque os itens concluídos hoje ({new Date().toLocaleDateString('pt-BR')}). O progresso fica salvo para o turno atual.
+            </Text>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {CHECKLIST_CUIDADOS_ITENS.map((item) => {
+                const checked = itensChecklistHoje.includes(item.id);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.checklistItem, checked && styles.checklistItemChecked]}
+                    onPress={() => toggleChecklistItem(item.id)}
+                    activeOpacity={0.75}
+                  >
+                    <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+                      {checked && <Text style={styles.checkboxTick}>✓</Text>}
+                    </View>
+                    <View style={styles.checklistItemTextWrap}>
+                      <Text style={[styles.checklistItemTitle, checked && styles.checklistItemTitleChecked]}>
+                        {item.titulo}
+                      </Text>
+                      <Text style={styles.checklistItemDesc}>{item.desc}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {itensChecklistHoje.length === CHECKLIST_CUIDADOS_ITENS.length && (
+                <View style={styles.checklistDoneBanner}>
+                  <Text style={styles.checklistDoneBannerText}>
+                    ✅ Todos os cuidados diários de enfermagem foram concluídos hoje!
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
