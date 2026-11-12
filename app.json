@@ -23,7 +23,13 @@
     },
     "plugins": [
       "expo-web-browser",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permitir que o MeuAppDeSaude use sua localização GPS para calcular a distância até os campi e clínicas-escola da UNC."
+        }
+      ]
     ]
   }
 }
