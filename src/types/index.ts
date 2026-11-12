@@ -1,10 +1,27 @@
-export interface Lembrete {
+export interface LembreteBase {
   id: string;
-  title: string;
-  type: string;
-  time: string;
-  color: string;
+  tipo: 'remedio' | 'acao';
+  concluido: boolean;
+  horario: string; // Ex: 08:00
+  notificationId?: string;
 }
+
+export interface LembreteRemedio extends LembreteBase {
+  tipo: 'remedio';
+  nomeRemedio: string;
+  frequencia: string;
+  observacoes?: string;
+}
+
+export interface LembreteAcao extends LembreteBase {
+  tipo: 'acao';
+  tipoAcao: 'consulta' | 'exercicio' | 'agua' | 'pressao' | 'outro';
+  acaoPersonalizada?: string;
+}
+
+export type Lembrete = LembreteRemedio | LembreteAcao;
+export type LembreteInput = Omit<LembreteRemedio, 'id'> | Omit<LembreteAcao, 'id'>;
+export type LembretePatch = Partial<Omit<LembreteRemedio, 'id' | 'tipo'>> & Partial<Omit<LembreteAcao, 'id' | 'tipo'>>;
 
 export interface SinalVital {
   id: string;
@@ -43,6 +60,12 @@ export interface Medicamento {
   dosagem: string;
   forma: string;
   estoque: string;
+  prescritor?: string;
+  validade?: string;
+  armazenamento?: string;
+  descontinuado?: boolean;
+  dataInicio?: string;
+  dataTermino?: string;
 }
 
 export interface SinalVitalEnfermagem {
@@ -65,6 +88,13 @@ export interface Treino {
 export interface RegistroDor {
   id: string;
   nivel: number;
+  data: string;
+}
+
+export interface PesoImcRegistro {
+  id: string;
+  peso: number;
+  imc?: number;
   data: string;
 }
 

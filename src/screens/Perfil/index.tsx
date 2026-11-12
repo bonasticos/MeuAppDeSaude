@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Alert, Modal, Platform } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useStore } from '../../store/useStore';
+import { BarChartCard, ChartPoint } from '../../components/ClinicaCharts';
 import { styles } from './styles';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Perfil'>;
@@ -25,6 +26,10 @@ export default function ProfileScreen({ navigation }: Props) {
   const frequenciaAtividade = perfil?.frequenciaAtividade || null;
   const treinos = useStore((state) => state.treinos || []);
   const addTreino = useStore((state) => state.addTreino);
+  const historicoImc = useStore((state) => state.historicoImc || []);
+  const addRegistroPesoImc = useStore((state) => state.addRegistroPesoImc);
+
+  const [chartMode, setChartMode] = useState<'peso' | 'imc'>('peso');
 
   const [age, setAge] = useState(perfil?.idade || '');
   const [weight, setWeight] = useState(perfil?.peso || '');
@@ -132,6 +137,7 @@ export default function ProfileScreen({ navigation }: Props) {
     }
 
     hasEditedPerfil.current = true;
+    const pesoAtualNum = parseFloat(weight.replace(',', '.'));
     updatePerfil({
       idade: age.trim(),
       peso: weight.trim(),
@@ -141,6 +147,13 @@ export default function ProfileScreen({ navigation }: Props) {
       comorbidades,
       alergias: alergias.trim(),
     });
+
+    if (!isNaN(pesoAtualNum) && pesoAtualNum > 0) {
+      addRegistroPesoImc({
+        peso: Number(pesoAtualNum.toFixed(1)),
+        imc: imc !== null ? Number(imc.toFixed(1)) : undefined,
+      });
+    }
 
     const dadosCorporaisFaltantes = !age.trim() || !weight.trim() || !height.trim() || !gender;
     mostrarAlerta(
@@ -194,6 +207,54 @@ export default function ProfileScreen({ navigation }: Props) {
 
   const treinosNaSemana = treinos.length % 6; // Mock para barra de progresso
   const alertaAlergiaTexto = alergias.trim() || (perfil?.alergias || '').trim();
+
+  const evolutionChartData: ChartPoint[] = useMemo(() => {
+    const baseRecords = [...historicoImc];
+    if (baseRecords.length === 0 && perfil?.peso) {
+      const pNum = parseFloat(perfil.peso.replace(',', '.'));
+      if (!isNaN(pNum) && pNum > 0) {
+        baseRecords.push({
+          id: 'baseline-atual',
+          peso: Number(pNum.toFixed(1)),
+          imc: perfil.imc !== undefined ? Number(perfil.imc.toFixed(1)) : undefined,
+          data: new Date().toISOString(),
+        });
+      }
+    }
+
+    const recent = baseRecords.slice(-7);
+    const points: ChartPoint[] = [];
+
+    recent.forEach((rec) => {
+      const label =
+        rec.id === 'baseline-atual'
+          ? 'Atual'
+          : new Date(rec.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+      if (chartMode === 'peso' && rec.peso > 0) {
+        points.push({
+          label,
+          value: rec.peso,
+          displayValue: `${rec.peso.toFixed(1)}kg`,
+          color: '#0E7490',
+        });
+      } else if (chartMode === 'imc' && rec.imc !== undefined && rec.imc > 0) {
+        let color = '#10B981';
+        if (rec.imc < 18.5) color = '#3B82F6';
+        else if (rec.imc >= 25 && rec.imc < 30) color = '#F59E0B';
+        else if (rec.imc >= 30) color = '#EF4444';
+
+        points.push({
+          label,
+          value: rec.imc,
+          displayValue: rec.imc.toFixed(1),
+          color,
+        });
+      }
+    });
+
+    return points;
+  }, [historicoImc, perfil?.peso, perfil?.imc, chartMode]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -356,6 +417,53 @@ export default function ProfileScreen({ navigation }: Props) {
           )}
         </View>
 
+        {/* Gráfico de Evolução de Peso e IMC (RF33) */}
+        <BarChartCard
+          title="📊 Evolução de Peso & IMC (RF33)"
+          subtitle={
+            chartMode === 'peso'
+              ? 'Histórico do seu peso corporal salvo ao atualizar o perfil.'
+              : 'Histórico do Índice de Massa Corporal (IMC).'
+          }
+          data={evolutionChartData}
+          emptyMessage={
+            chartMode === 'imc'
+              ? 'Salve Peso e Altura no perfil para acompanhar a evolução do IMC.'
+              : 'Salve seu peso corporal no perfil para acompanhar a evolução ao longo do tempo.'
+          }
+          legend={
+            chartMode === 'imc'
+              ? [
+                  { label: 'Abaixo (<18.5)', color: '#3B82F6' },
+                  { label: 'Normal', color: '#10B981' },
+                  { label: 'Sobrepeso', color: '#F59E0B' },
+                  { label: 'Obesidade', color: '#EF4444' },
+                ]
+              : undefined
+          }
+        >
+          <View style={styles.chartToggleRow}>
+            <TouchableOpacity
+              style={[styles.chartToggleBtn, chartMode === 'peso' && styles.chartToggleBtnActive]}
+              onPress={() => setChartMode('peso')}
+              activeOpacity={0.75}
+            >
+              <Text style={[styles.chartToggleText, chartMode === 'peso' && styles.chartToggleTextActive]}>
+                ⚖️ Peso (kg)
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.chartToggleBtn, chartMode === 'imc' && styles.chartToggleBtnActive]}
+              onPress={() => setChartMode('imc')}
+              activeOpacity={0.75}
+            >
+              <Text style={[styles.chartToggleText, chartMode === 'imc' && styles.chartToggleTextActive]}>
+                📏 IMC
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BarChartCard>
+
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Frequência de Atividades</Text>
           <View style={styles.activityList}>
@@ -448,7 +556,7 @@ export default function ProfileScreen({ navigation }: Props) {
         <View style={styles.historyContainer}>
           <Text style={styles.historyTitle}>Últimos Treinos</Text>
           {treinos.length === 0 ? (
-            <Text style={{ color: '#666' }}>Você ainda não registrou treinos.</Text>
+            <Text style={styles.emptyText}>Você ainda não registrou treinos.</Text>
           ) : (
             treinos.slice().reverse().slice(0, 8).map((t) => (
               <View key={t.id} style={styles.workoutHistoryCard}>

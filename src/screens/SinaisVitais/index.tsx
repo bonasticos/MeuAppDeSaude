@@ -4,6 +4,7 @@ import { useStore } from '../../store/useStore';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { SinalVital } from '../../types';
+import { BarChartCard, ChartPoint } from '../../components/ClinicaCharts';
 import { styles } from './styles';
 import * as Notifications from 'expo-notifications';
 
@@ -241,6 +242,7 @@ export default function TelaSinaisVitais({ navigation }: Props) {
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [checklistModalVisible, setChecklistModalVisible] = useState(false);
+  const [chartMetric, setChartMetric] = useState<'bpm' | 'glicose' | 'pressao' | 'oxigenacao' | 'temperatura'>('bpm');
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -706,6 +708,89 @@ export default function TelaSinaisVitais({ navigation }: Props) {
   const isFebre = hasValidTempPreview && tempParsed > 37.8;
   const isHipotermia = hasValidTempPreview && tempParsed < 35.0;
 
+  const chartConfig = useMemo(() => {
+    const metrics: {
+      id: typeof chartMetric;
+      label: string;
+      subtitle: string;
+      unit: string;
+      maxScale?: number;
+    }[] = [
+      { id: 'bpm', label: '❤️ BPM', subtitle: 'Faixa saudável: 50 a 120 bpm', unit: '' },
+      { id: 'glicose', label: '🩸 Glicose', subtitle: 'Referência geral: 70 a 140 mg/dL', unit: '' },
+      { id: 'pressao', label: '🩺 Pressão', subtitle: 'Pressão Arterial Sistólica (mmHg)', unit: '' },
+      { id: 'oxigenacao', label: '🫁 SpO2', subtitle: 'Saturação de oxigênio (recomendado ≥ 95%)', unit: '%', maxScale: 100 },
+      { id: 'temperatura', label: '🌡️ Temp.', subtitle: 'Temperatura corporal normal: 35.0 a 37.8 °C', unit: '°', maxScale: 43 },
+    ];
+
+    const current = metrics.find((m) => m.id === chartMetric) || metrics[0];
+    const points: ChartPoint[] = [];
+
+    historico.forEach((h) => {
+      const dateObj = new Date(h.data);
+      const label = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+      if (chartMetric === 'bpm' && h.bpm) {
+        const val = parseInt(h.bpm, 10);
+        if (!isNaN(val) && val > 0) {
+          points.push({
+            label,
+            value: val,
+            displayValue: `${val}`,
+            color: val < 50 || val > 120 ? '#EF4444' : '#10B981',
+          });
+        }
+      } else if (chartMetric === 'glicose' && h.glicose) {
+        const val = parseInt(h.glicose, 10);
+        if (!isNaN(val) && val > 0) {
+          points.push({
+            label,
+            value: val,
+            displayValue: `${val}`,
+            color: val < 70 || val > 140 ? '#EF4444' : '#10B981',
+          });
+        }
+      } else if (chartMetric === 'pressao' && h.pressao) {
+        const [sysRaw] = h.pressao.split('/');
+        const sysVal = parseInt((sysRaw || '').trim(), 10);
+        if (!isNaN(sysVal) && sysVal > 0) {
+          points.push({
+            label,
+            value: sysVal,
+            displayValue: h.pressao,
+            color: sysVal < 100 || sysVal > 130 ? '#EF4444' : '#10B981',
+          });
+        }
+      } else if (chartMetric === 'oxigenacao' && h.oxigenacao) {
+        const val = parseInt(h.oxigenacao, 10);
+        if (!isNaN(val) && val > 0) {
+          points.push({
+            label,
+            value: val,
+            displayValue: `${val}%`,
+            color: val < 95 ? '#EF4444' : '#10B981',
+          });
+        }
+      } else if (chartMetric === 'temperatura' && h.temperatura) {
+        const val = parseFloat(h.temperatura);
+        if (!isNaN(val) && val > 0) {
+          points.push({
+            label,
+            value: val,
+            displayValue: `${val.toFixed(1)}°`,
+            color: val > 37.8 || val < 35.0 ? '#EF4444' : '#10B981',
+          });
+        }
+      }
+    });
+
+    return {
+      metrics,
+      current,
+      data: points.slice(-7),
+    };
+  }, [historico, chartMetric]);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -1048,6 +1133,38 @@ export default function TelaSinaisVitais({ navigation }: Props) {
           </TouchableOpacity>
         </View>
 
+        {/* Gráfico de Evolução de Sinais Vitais */}
+        <BarChartCard
+          title="📊 Evolução dos Sinais Vitais"
+          subtitle={chartConfig.current.subtitle}
+          unit={chartConfig.current.unit}
+          maxScale={chartConfig.current.maxScale}
+          data={chartConfig.data}
+          emptyMessage={`Sem medições suficientes de ${chartConfig.current.label.replace(/^[^\s]+\s/, '')} para gerar o gráfico.`}
+          legend={[
+            { label: 'Dentro da faixa', color: '#10B981' },
+            { label: 'Requer atenção', color: '#EF4444' },
+          ]}
+        >
+          <View style={styles.chartTabsRow}>
+            {chartConfig.metrics.map((metric) => {
+              const active = chartMetric === metric.id;
+              return (
+                <TouchableOpacity
+                  key={metric.id}
+                  style={[styles.chartTab, active && styles.chartTabActive]}
+                  onPress={() => setChartMetric(metric.id)}
+                  activeOpacity={0.75}
+                >
+                  <Text style={[styles.chartTabText, active && styles.chartTabTextActive]}>
+                    {metric.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </BarChartCard>
+
         {/* History */}
         <View style={styles.historyContainer}>
           <Text style={styles.historyTitle}>Últimos Registros</Text>
@@ -1110,8 +1227,8 @@ export default function TelaSinaisVitais({ navigation }: Props) {
                     ) : null}
                     {(h.humor || h.exercicio !== undefined) && (
                       <View style={[styles.historyRow, { marginTop: 4, flexWrap: 'wrap' }]}>
-                        {h.humor && <Text style={{ fontSize: 13, color: '#666', marginRight: 8 }}>Humor: {h.humor}</Text>}
-                        {h.exercicio !== undefined && <Text style={{ fontSize: 13, color: '#666' }}>Exercício: {h.exercicio ? 'Sim' : 'Não'}</Text>}
+                        {h.humor && <Text style={{ fontSize: 15, color: '#374151', marginRight: 8 }}>Humor: {h.humor}</Text>}
+                        {h.exercicio !== undefined && <Text style={{ fontSize: 15, color: '#374151' }}>Exercício: {h.exercicio ? 'Sim' : 'Não'}</Text>}
                       </View>
                     )}
 

@@ -24,16 +24,20 @@ export const styles = StyleSheet.create({
   title: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#1F2937',
   },
   settingsButton: {
     backgroundColor: '#e9ecef',
     padding: 10,
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 30,
   },
   subtitle: {
     fontSize: 18,
-    color: '#666',
+    color: '#4B5563',
   },
   grid: {
     flexDirection: 'row',
@@ -63,16 +67,16 @@ export const styles = StyleSheet.create({
   },
   cardText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 4,
   },
   courseTag: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    color: '#FFFFFF',
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '700',
   },
   uncPromoCard: {
     backgroundColor: '#103457',
@@ -107,9 +111,9 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   uncPromoEyebrow: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '800',
-    color: '#93C5FD',
+    color: '#BAE6FD',
     letterSpacing: 0.8,
     marginBottom: 6,
   },
@@ -122,9 +126,9 @@ export const styles = StyleSheet.create({
     maxWidth: '85%',
   },
   uncPromoDesc: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.84)',
-    lineHeight: 20,
+    fontSize: 16,
+    color: '#F1F5F9',
+    lineHeight: 22,
     marginBottom: 16,
     maxWidth: '85%',
   },
@@ -134,7 +138,7 @@ export const styles = StyleSheet.create({
     gap: 6,
   },
   uncPromoCtaText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
   },

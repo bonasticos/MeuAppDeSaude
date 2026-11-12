@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import {
   Lembrete,
+  LembreteInput,
   SinalVital,
   HumorRegistro,
   Medicamento,
@@ -59,7 +60,7 @@ export const escutarPerfil = (userId: string, callback: (perfil: PerfilUsuario |
 // ==========================================
 // LEMBRETES (tabela: lembretes)
 // ==========================================
-export const adicionarLembrete = async (userId: string, lembrete: Omit<Lembrete, 'id'>) => {
+export const adicionarLembrete = async (userId: string, lembrete: LembreteInput) => {
   const { data, error } = await supabase
     .from('lembretes')
     .insert({ user_id: userId, ...lembrete })
@@ -336,4 +337,28 @@ export const listarHistoricoDor = async (userId: string): Promise<RegistroDor[]>
 
   if (error) handleError(error, 'listarHistoricoDor');
   return (data || []) as RegistroDor[];
+};
+
+// ==========================================
+// STORAGE: AVATARS (bucket: avatars)
+// ==========================================
+export const uploadAvatar = async (userId: string, localUri: string): Promise<string | null> => {
+  try {
+    const response = await fetch(localUri);
+    const blob = await response.blob();
+    const ext = localUri.split('.').pop()?.split('?')[0] || 'jpg';
+    const path = `${userId}/avatar.${ext}`;
+
+    const { error } = await supabase.storage
+      .from('avatars')
+      .upload(path, blob, { upsert: true });
+
+    if (error) handleError(error, 'uploadAvatar');
+
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+    return data?.publicUrl || null;
+  } catch (err) {
+    console.warn('Falha no uploadAvatar (Supabase Storage):', err);
+    return null;
+  }
 };

@@ -28,7 +28,7 @@ export default function TelaInicial({ navigation }: Props) {
               {perfil?.fotoUri ? (
                 <Image source={{ uri: perfil.fotoUri }} style={{ width: 44, height: 44, borderRadius: 22 }} />
               ) : (
-                <Ionicons name="settings-sharp" size={28} color="#999" />
+                <Ionicons name="settings-sharp" size={28} color="#374151" />
               )}
             </TouchableOpacity>
           </View>
@@ -72,8 +72,8 @@ export default function TelaInicial({ navigation }: Props) {
             activeOpacity={0.8}
           >
             <MaterialCommunityIcons name="run" size={54} color="#333" style={[styles.icon, { color: '#333' }]} />
-            <Text style={[styles.cardText, { color: '#333' }]}>Corpo & Movimento</Text>
-            <Text style={[styles.courseTag, { color: 'rgba(51, 51, 51, 0.7)' }]}>Educação Física & Fisioterapia</Text>
+            <Text style={[styles.cardText, { color: '#1F2937' }]}>Corpo & Movimento</Text>
+            <Text style={[styles.courseTag, { color: '#1F2937' }]}>Educação Física & Fisioterapia</Text>
           </TouchableOpacity>
         </View>
 

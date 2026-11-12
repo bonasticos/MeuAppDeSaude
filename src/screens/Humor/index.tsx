@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Alert, Modal, Platform } from 'react-native';
 import { useStore } from '../../store/useStore';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { BarChartCard, ChartPoint } from '../../components/ClinicaCharts';
 import { styles } from './styles';
 import {
   GAD7_PERGUNTAS,
@@ -169,6 +170,30 @@ export default function MoodScreen({ navigation }: Props) {
     return MOODS.find(m => m.id === moodId) || MOODS[0];
   };
 
+  // Frequência de humores nos últimos 7 dias (RF37)
+  const moodFrequencyData: ChartPoint[] = useMemo(() => {
+    const agora = Date.now();
+    const seteDiasMs = 7 * 24 * 60 * 60 * 1000;
+    const recentes = (humorHistorico || []).filter((h) => {
+      const t = new Date(h.data).getTime();
+      return !isNaN(t) && agora - t <= seteDiasMs;
+    });
+
+    if (recentes.length === 0) {
+      return [];
+    }
+
+    return MOODS.map((m) => {
+      const count = recentes.filter((h) => h.moodId === m.id).length;
+      return {
+        label: `${m.emoji} ${m.label}`,
+        value: count,
+        displayValue: `${count}x`,
+        color: m.color,
+      };
+    });
+  }, [humorHistorico]);
+
   // Merge histories and sort desc
   const mergedHistory = [
     ...(humorHistorico || []).map(h => ({ type: 'humor' as const, data: h.data, item: h })),
@@ -252,7 +277,7 @@ export default function MoodScreen({ navigation }: Props) {
           onPress={handleSave}
           activeOpacity={0.8}
         >
-          <Text style={[styles.saveButtonText, !selectedMood && { color: '#A0A0AB' }]}>
+          <Text style={[styles.saveButtonText, !selectedMood && { color: '#4B5563' }]}>
             Salvar Registro Psicológico
           </Text>
         </TouchableOpacity>
@@ -292,6 +317,14 @@ export default function MoodScreen({ navigation }: Props) {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Gráfico Semanal de Frequência de Humores (RF37) */}
+        <BarChartCard
+          title="📊 Frequência de Humores na Semana (RF37)"
+          subtitle="Quantas vezes cada estado emocional foi registrado nos últimos 7 dias."
+          data={moodFrequencyData}
+          emptyMessage="Registre seu humor durante os últimos 7 dias para acompanhar a distribuição emocional da semana."
+        />
 
         <View style={styles.historyContainer}>
           <Text style={styles.historyTitle}>Linha do Tempo (Humor, Triagens & Sinais)</Text>
